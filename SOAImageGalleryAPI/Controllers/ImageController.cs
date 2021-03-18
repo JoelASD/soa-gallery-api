@@ -37,7 +37,38 @@ namespace SOAImageGalleryAPI.Controllers
                 return Ok();
             }
             return BadRequest();
-            
+        }
+
+        [HttpGet("{id}")]
+        public Image GetOneImage(string id)
+        {
+            return _context.Images.FirstOrDefault(i => i.Id == id);
+        }
+
+        [HttpPut]
+        public IActionResult EditImage([FromBody] Image image)
+        {
+            if (ModelState.IsValid)
+            {
+                image.Updated = DateTime.Now;
+                _context.Images.Update(image);
+                _context.SaveChanges();
+                return Ok();
+            }
+            return BadRequest();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteImage(string id)
+        {
+            var data = _context.Images.FirstOrDefault(i => i.Id == id);
+            if(data == null)
+            {
+                return NotFound();
+            }
+            _context.Images.Remove(data);
+            _context.SaveChanges();
+            return Ok();
         }
     }
 }
