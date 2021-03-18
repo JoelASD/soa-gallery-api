@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using SOAImageGalleryAPI.Models;
 using SOAImageGalleryAPI.Wrappers;
 using SOAImageGalleryAPI.Filter;
+using SOAImageGalleryAPI.Services;
+using SOAImageGalleryAPI.Helpers;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -15,22 +17,26 @@ namespace SOAImageGalleryAPI.Controllers
     public class ImageController : Controller
     {
         private DataContext _context = null;
-        public ImageController(DataContext context)
+        private readonly IUriService _uriService;
+        public ImageController(DataContext context, IUriService uriService)
         {
             _context = context;
+            _uriService = uriService;
         }
 
         // Getting paged images, max 10
         [HttpGet]
         public ActionResult GetAllPagedImages([FromQuery] PaginationFilter filter)
         {
+            var route = Request.Path.Value;
             var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
             var pagedData = _context.Images
                 .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                 .Take(validFilter.PageSize)
                 .ToList();
             var totalRecords = _context.Images.Count();
-            return Ok(new PagedResponse<List<Image>>(pagedData, validFilter.PageNumber, validFilter.PageSize));
+            var pagedResponse = PaginationHelper.CreatePagedReponse<Image>(pagedData, validFilter, totalRecords, _uriService, route);
+            return Ok(pagedResponse);
         }
 
         // Get all images
