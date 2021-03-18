@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SOAImageGalleryAPI.Models;
+using SOAImageGalleryAPI.Wrappers;
+using SOAImageGalleryAPI.Filter;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -18,12 +20,33 @@ namespace SOAImageGalleryAPI.Controllers
             _context = context;
         }
 
+        // Getting paged images, max 10
         [HttpGet]
-        public ActionResult GetImages()
+        public ActionResult GetAllPagedImages([FromQuery] PaginationFilter filter)
         {
-            return Ok(_context.Images.ToList());
+            var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+            var pagedData = _context.Images
+                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                .Take(validFilter.PageSize)
+                .ToList();
+            var totalRecords = _context.Images.Count();
+            return Ok(new PagedResponse<List<Image>>(pagedData, validFilter.PageNumber, validFilter.PageSize));
         }
 
+        // Get all images
+        [HttpGet("/image/all")]
+        public ActionResult GetImages()
+        {
+            return Ok(new Response<List<Image>>(_context.Images.ToList()));
+        }
+        // Getting all images
+        //[HttpGet]
+        //public ActionResult GetAllImages()
+        //{
+        //    return Ok(_context.Images.ToList());
+        //}
+
+        // Adding an image
         [HttpPost]
         public ActionResult AddImage([FromBody]Image image)
         {
@@ -39,12 +62,15 @@ namespace SOAImageGalleryAPI.Controllers
             return BadRequest();
         }
 
+        // Getting one image
         [HttpGet("{id}")]
-        public Image GetOneImage(string id)
+        public IActionResult GetOneImage(string id)
         {
-            return _context.Images.FirstOrDefault(i => i.Id == id);
+            var image = _context.Images.FirstOrDefault(i => i.Id == id);
+            return Ok(new Response<Image>(image));
         }
 
+        // Editing an image
         [HttpPut]
         public IActionResult EditImage([FromBody] Image image)
         {
@@ -58,6 +84,7 @@ namespace SOAImageGalleryAPI.Controllers
             return BadRequest();
         }
 
+        // Deleting an image
         [HttpDelete("{id}")]
         public IActionResult DeleteImage(string id)
         {
