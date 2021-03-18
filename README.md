@@ -22,3 +22,5 @@ Image Gallery API for the Service Oriented Applications Course in JAMK
 * POST /auth/register
 * POST /auth/login
 * GET /auth/logout
+
+* GET /ping
