@@ -5,17 +5,15 @@ using System.Threading.Tasks;
 
 namespace SOAImageGalleryAPI.Models
 {
-    public class Image
+    public class Vote
     {
-        public string Id { get; set; }
-        public string ImageFile { get; set; }
-        public string ImageTitle { get; set; }
+        public string VoteId { get; set; }
+        public int Voted { get; set; }
         public string UserID { get; set; }
         public User User { get; set; }
-        public List<Vote> Votes { get; set; }
-        public List<UserHasFavourite> Favourites { get; set; }
+        public string ImageID { get; set; }
+        public Image Image { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
-        
     }
 }
