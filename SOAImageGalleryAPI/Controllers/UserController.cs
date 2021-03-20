@@ -25,6 +25,11 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpPost("/register")]
         public ActionResult RegisterUser([FromBody] User user)
         {
+            if (_context.Users.FirstOrDefault(i => i.UserName == user.UserName) != null)
+            {
+                return BadRequest(new Response<User>("User already exists"));
+            }
+
             if (ModelState.IsValid)
             {
                 user.UserId = Guid.NewGuid().ToString();
@@ -48,6 +53,7 @@ namespace SOAImageGalleryAPI.Controllers
             {
                 return BadRequest();
             }
+            fetchedUser.UserPassword = null;
             return Ok(new Response<User>(fetchedUser));
         }
 

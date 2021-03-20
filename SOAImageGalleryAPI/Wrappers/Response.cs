@@ -17,6 +17,11 @@ namespace SOAImageGalleryAPI.Wrappers
             Errors = null;
             Data = data;
         }
+        public Response(string error)
+        {
+            Succeeded = false;
+            Message = error;
+        }
         public T Data { get; set; }
         public bool Succeeded { get; set; }
         public string[] Errors { get; set; }
