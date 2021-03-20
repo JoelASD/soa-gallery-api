@@ -1,21 +1,21 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace SOAImageGalleryAPI.Models
 {
-    public class Image
+    public class UserHasFavourite
     {
-        public string Id { get; set; }
-        public string ImageFile { get; set; }
-        public string ImageTitle { get; set; }
+        [Key]
+        public string FavouriteID { get; set; }
         public string UserID { get; set; }
         public User User { get; set; }
-        public List<Vote> Votes { get; set; }
-        public List<UserHasFavourite> Favourites { get; set; }
+        public string ImageID { get; set; }
+        public Image Image { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
-        
     }
 }
