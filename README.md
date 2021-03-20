@@ -30,3 +30,10 @@ Image Gallery API for the Service Oriented Applications Course in JAMK
 ## Database Model
 
 ![Database](images/LogicalDbModel.png)
+
+## Dotnet commands
+
+* Installing Entity Framework: ```dotnet tool install --global dotnet-ef```
+* Creating Database Migrations: ```dotnet-ef migrations add InitialCreate```
+* Updating Database: ```dotnet-ef database update```
+* Starting the server: ```dotnet run``` runs on http://localhost:5001
