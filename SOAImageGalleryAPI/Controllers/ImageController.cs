@@ -45,12 +45,6 @@ namespace SOAImageGalleryAPI.Controllers
         {
             return Ok(new Response<List<Image>>(_context.Images.ToList()));
         }
-        // Getting all images
-        //[HttpGet]
-        //public ActionResult GetAllImages()
-        //{
-        //    return Ok(_context.Images.ToList());
-        //}
 
         // Adding an image
         [HttpPost]

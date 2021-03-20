@@ -2,6 +2,8 @@
 
 Image Gallery API for the Service Oriented Applications Course in JAMK
 
+## API Endpoints
+
 * POST /image
 * GET /image?limit=10&page=1
 * GET /image/trending
@@ -24,3 +26,7 @@ Image Gallery API for the Service Oriented Applications Course in JAMK
 * GET /auth/logout
 
 * GET /ping
+
+## Database Model
+
+![Database](images/LogicalDbModel.png)
