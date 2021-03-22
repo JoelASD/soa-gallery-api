@@ -9,6 +9,7 @@ using SOAImageGalleryAPI.Wrappers;
 using SOAImageGalleryAPI.Filter;
 using SOAImageGalleryAPI.Services;
 using SOAImageGalleryAPI.Helpers;
+using Minio;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -48,13 +49,23 @@ namespace SOAImageGalleryAPI.Controllers
 
         // Adding an image
         [HttpPost]
-        public ActionResult AddImage([FromBody]Image image)
+        public async Task<ActionResult> AddImage([FromBody]Image image)
         {
+            var minio = new MinioClient("195.148.22.154:9001", "minio", "minio123");
             if (ModelState.IsValid)
             {
+                string file = image.ImageFile.Split("\\")[image.ImageFile.Split("\\").Length - 1];
+                string imageFormat = file.Split('.')[file.Split('.').Length - 1];
+                string fileName = file.Split('.')[0];
+                string newFileName = String.Format("{0}{1:yyyyMMddHHmmssfff}.{2}", fileName, DateTime.Now, imageFormat);
+
+                // Uploading an Image to the MinIO bucket
+                await minio.PutObjectAsync("images", newFileName, image.ImageFile);
+
                 image.Id = Guid.NewGuid().ToString();
                 image.Created = DateTime.Now;
                 image.Updated = DateTime.Now;
+                image.ImageFile = newFileName;
                 _context.Images.Add(image);
                 _context.SaveChanges();
                 return Ok();
