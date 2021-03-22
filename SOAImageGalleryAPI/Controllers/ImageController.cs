@@ -10,6 +10,7 @@ using SOAImageGalleryAPI.Filter;
 using SOAImageGalleryAPI.Services;
 using SOAImageGalleryAPI.Helpers;
 using Minio;
+using Microsoft.Extensions.Configuration;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -19,10 +20,12 @@ namespace SOAImageGalleryAPI.Controllers
     {
         private DataContext _context = null;
         private readonly IUriService _uriService;
-        public ImageController(DataContext context, IUriService uriService)
+        private readonly IConfiguration _config;
+        public ImageController(DataContext context, IUriService uriService, IConfiguration config)
         {
             _context = context;
             _uriService = uriService;
+            _config = config;
         }
 
         // Getting paged images, max 10
@@ -51,7 +54,7 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpPost]
         public async Task<ActionResult> AddImage([FromBody]Image image)
         {
-            var minio = new MinioClient("195.148.22.154:9001", "minio", "minio123");
+            var minio = new MinioClient(_config["MinIOHost"], _config["MinIOAccessKey"], _config["MinIOHostSecretKey"]);
             if (ModelState.IsValid)
             {
                 string file = image.ImageFile.Split("\\")[image.ImageFile.Split("\\").Length - 1];
