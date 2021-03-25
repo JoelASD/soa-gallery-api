@@ -6,6 +6,7 @@ test:
     only:
         - master
     script:
+        - apt-get install openssh-server
         - ssh -i $SSH_PRIVATE_KEY ubuntu@$SSH_HOST
         - ls
     tags:
