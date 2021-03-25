@@ -57,7 +57,10 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpPost]
         public async Task<ActionResult> AddImage([FromBody]Image image)
         {
-            var minio = new MinioClient(_config["MinIOHost"], _config["MinIOAccessKey"], _config["MinIOHostSecretKey"]);
+
+            string[] minIoCreds = EnvVars.GetEnvVar(_env.EnvironmentName, _config);
+
+            var minio = new MinioClient(minIoCreds[0], minIoCreds[1], minIoCreds[2]);
             if (ModelState.IsValid)
             {
                 string file = image.ImageFile.Split("\\")[image.ImageFile.Split("\\").Length - 1];
