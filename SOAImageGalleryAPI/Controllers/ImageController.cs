@@ -11,6 +11,7 @@ using SOAImageGalleryAPI.Services;
 using SOAImageGalleryAPI.Helpers;
 using Minio;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -21,11 +22,13 @@ namespace SOAImageGalleryAPI.Controllers
         private DataContext _context = null;
         private readonly IUriService _uriService;
         private readonly IConfiguration _config;
-        public ImageController(DataContext context, IUriService uriService, IConfiguration config)
+        private readonly IWebHostEnvironment _env;
+        public ImageController(DataContext context, IUriService uriService, IConfiguration config, IWebHostEnvironment env)
         {
             _context = context;
             _uriService = uriService;
             _config = config;
+            _env = env;
         }
 
         // Getting paged images, max 10
