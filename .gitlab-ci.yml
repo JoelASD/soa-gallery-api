@@ -1,14 +1,22 @@
-image: alpine:3.7
+image: ubuntu
 stages:
     - test
+
+before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
 
 test:
     stage: test
     only:
         - master
     script:
-        - apk add openssh
-        - ssh -i $SSH_PRIVATE_KEY ubuntu@$SSH_HOST
+        - ssh ubuntu@$SSH_HOST
         - ls
     tags:
         - general
