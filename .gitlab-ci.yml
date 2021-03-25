@@ -9,4 +9,4 @@ test:
         - ssh -i $SSH_PRIVATE_KEY ubuntu@$SSH_HOST
         - ls
     tags:
-    - 28085d40
+    - gitlab-runner.labranet.jamk.fi
