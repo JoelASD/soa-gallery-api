@@ -3,7 +3,7 @@ stages:
     - test
 
 before_script:
-    - apt-get update && apt-get install openssh-client
+    - apt-get update -y && apt-get install openssh-client -y
 
 test:
     stage: test
