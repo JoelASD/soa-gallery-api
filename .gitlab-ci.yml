@@ -2,15 +2,19 @@ image: ubuntu
 stages:
     - test
 
-before_script:
-    - apt-get update -y && apt-get install openssh-client -y
-
 test:
     stage: test
     only:
         - master
     script:
-        - ssh -i $SSH_PRIVATE_KEY ubuntu@$SSH_HOST
+        - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+        - eval $(ssh-agent -s)
+        - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+        - mkdir -p ~/.ssh
+        - chmod 700 ~/.ssh
+        - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+        - chmod 644 ~/.ssh/known_hosts
+        - ssh ubuntu@$SSH_HOST
         - ls
     tags:
         - general
