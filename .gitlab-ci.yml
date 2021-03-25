@@ -8,3 +8,5 @@ test:
     script:
         - ssh -i $SSH_PRIVATE_KEY ubuntu@$SSH_HOST
         - ls
+    tags:
+    - 28085d40
