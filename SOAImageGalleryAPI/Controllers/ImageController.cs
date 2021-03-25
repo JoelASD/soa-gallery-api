@@ -9,6 +9,9 @@ using SOAImageGalleryAPI.Wrappers;
 using SOAImageGalleryAPI.Filter;
 using SOAImageGalleryAPI.Services;
 using SOAImageGalleryAPI.Helpers;
+using Minio;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -18,10 +21,14 @@ namespace SOAImageGalleryAPI.Controllers
     {
         private DataContext _context = null;
         private readonly IUriService _uriService;
-        public ImageController(DataContext context, IUriService uriService)
+        private readonly IConfiguration _config;
+        private readonly IWebHostEnvironment _env;
+        public ImageController(DataContext context, IUriService uriService, IConfiguration config, IWebHostEnvironment env)
         {
             _context = context;
             _uriService = uriService;
+            _config = config;
+            _env = env;
         }
 
         // Getting paged images, max 10
@@ -48,13 +55,26 @@ namespace SOAImageGalleryAPI.Controllers
 
         // Adding an image
         [HttpPost]
-        public ActionResult AddImage([FromBody]Image image)
+        public async Task<ActionResult> AddImage([FromBody]Image image)
         {
+
+            string[] minIoCreds = EnvVars.GetEnvVar(_env.EnvironmentName, _config);
+
+            var minio = new MinioClient(minIoCreds[0], minIoCreds[1], minIoCreds[2]);
             if (ModelState.IsValid)
             {
+                string file = image.ImageFile.Split("\\")[image.ImageFile.Split("\\").Length - 1];
+                string imageFormat = file.Split('.')[file.Split('.').Length - 1];
+                string fileName = file.Split('.')[0];
+                string newFileName = String.Format("{0}{1:yyyyMMddHHmmssfff}.{2}", fileName, DateTime.Now, imageFormat);
+
+                // Uploading an Image to the MinIO bucket
+                await minio.PutObjectAsync("images", newFileName, image.ImageFile);
+
                 image.Id = Guid.NewGuid().ToString();
                 image.Created = DateTime.Now;
                 image.Updated = DateTime.Now;
+                image.ImageFile = newFileName;
                 _context.Images.Add(image);
                 _context.SaveChanges();
                 return Ok();

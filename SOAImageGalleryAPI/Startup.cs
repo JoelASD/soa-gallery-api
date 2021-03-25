@@ -20,9 +20,11 @@ namespace SOAImageGalleryAPI
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private IWebHostEnvironment CurrentEnvironment { get; set; }
+        public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
             Configuration = configuration;
+            CurrentEnvironment = env;
         }
 
         public IConfiguration Configuration { get; }
@@ -30,7 +32,23 @@ namespace SOAImageGalleryAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<DataContext>(p => p.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+            //services.AddDbContext<DataContext>(p => p.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+            Console.WriteLine(CurrentEnvironment.EnvironmentName);
+            Console.WriteLine(CurrentEnvironment.IsDevelopment());
+            Console.WriteLine(CurrentEnvironment.IsProduction());
+            Console.WriteLine(Environment.GetEnvironmentVariable("IMAGE_GALLERY_POSTGRESQL_CONNECTION_STRING"));
+            if (CurrentEnvironment.IsDevelopment())
+            {
+                services.AddDbContext<DataContext>(p => p.UseNpgsql(Configuration["PostgreSqlConnectionString"]));
+            } else if (CurrentEnvironment.IsProduction())
+            {
+                services.AddDbContext<DataContext>(p => p.UseNpgsql(Environment.GetEnvironmentVariable("IMAGE_GALLERY_POSTGRESQL_CONNECTION_STRING")));
+            } else
+            {
+                services.AddDbContext<DataContext>(p => p.UseNpgsql(Environment.GetEnvironmentVariable("IMAGE_GALLERY_POSTGRESQL_CONNECTION_STRING")));
+            }
+
+            services.AddDbContext<DataContext>(p => p.UseNpgsql(Configuration["PostgreSqlConnectionString"]));
             services.AddHttpContextAccessor();
             services.AddSingleton<IUriService>(o =>
             {
@@ -55,6 +73,9 @@ namespace SOAImageGalleryAPI
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SOAImageGalleryAPI v1"));
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SOAImageGalleryAPI v1"));
 
             app.UseHttpsRedirection();
 
