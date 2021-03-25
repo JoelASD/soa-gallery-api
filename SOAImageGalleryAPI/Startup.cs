@@ -26,9 +26,11 @@ namespace SOAImageGalleryAPI
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private IWebHostEnvironment CurrentEnvironment { get; set; }
+        public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
             Configuration = configuration;
+            CurrentEnvironment = env;
         }
 
         public IConfiguration Configuration { get; }
@@ -39,6 +41,21 @@ namespace SOAImageGalleryAPI
             services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
 
             //services.AddDbContext<DataContext>(p => p.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+            Console.WriteLine(CurrentEnvironment.EnvironmentName);
+            Console.WriteLine(CurrentEnvironment.IsDevelopment());
+            Console.WriteLine(CurrentEnvironment.IsProduction());
+            Console.WriteLine(Environment.GetEnvironmentVariable("IMAGE_GALLERY_POSTGRESQL_CONNECTION_STRING"));
+            if (CurrentEnvironment.IsDevelopment())
+            {
+                services.AddDbContext<DataContext>(p => p.UseNpgsql(Configuration["PostgreSqlConnectionString"]));
+            } else if (CurrentEnvironment.IsProduction())
+            {
+                services.AddDbContext<DataContext>(p => p.UseNpgsql(Environment.GetEnvironmentVariable("IMAGE_GALLERY_POSTGRESQL_CONNECTION_STRING")));
+            } else
+            {
+                services.AddDbContext<DataContext>(p => p.UseNpgsql(Environment.GetEnvironmentVariable("IMAGE_GALLERY_POSTGRESQL_CONNECTION_STRING")));
+            }
+
             services.AddDbContext<DataContext>(p => p.UseNpgsql(Configuration["PostgreSqlConnectionString"]));
 
             services.AddAuthentication(options => {
