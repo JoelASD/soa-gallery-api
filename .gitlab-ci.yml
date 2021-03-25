@@ -9,4 +9,4 @@ test:
         - ssh -i $SSH_PRIVATE_KEY ubuntu@$SSH_HOST
         - ls
     tags:
-    - gitlab-runner.labranet.jamk.fi
+        - ci-shared
