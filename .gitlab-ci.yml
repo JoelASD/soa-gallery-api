@@ -1,0 +1,10 @@
+stages:
+    - test
+
+test:
+    stage: test
+    only:
+        - master
+    script:
+        - ssh -i $SSH_PRIVATE_KEY ubuntu@$SSH_HOST
+        - ls
