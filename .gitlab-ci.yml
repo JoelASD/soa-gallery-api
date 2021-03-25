@@ -2,14 +2,12 @@ image: alpine:3.7
 stages:
     - test
 
-before-script:
-    - apk add openssh
-
 test:
     stage: test
     only:
         - master
     script:
+        - apk add openssh
         - ssh -i $SSH_PRIVATE_KEY ubuntu@$SSH_HOST
         - ls
     tags:
