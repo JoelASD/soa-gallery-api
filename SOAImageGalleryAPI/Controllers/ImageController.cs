@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
 using SOAImageGalleryAPI.Models;
 using SOAImageGalleryAPI.Wrappers;
 using SOAImageGalleryAPI.Filter;
@@ -55,28 +56,43 @@ namespace SOAImageGalleryAPI.Controllers
 
         // Adding an image
         [HttpPost]
-        public async Task<ActionResult> AddImage([FromBody]Image image)
+        public async Task<ActionResult> AddImage([FromBody]ImageFromBody image)
         {
+            Image imageToSave = new Image();
 
             string[] minIoCreds = EnvVars.GetEnvVar(_env.EnvironmentName, _config);
 
             var minio = new MinioClient(minIoCreds[0], minIoCreds[1], minIoCreds[2]);
             if (ModelState.IsValid)
             {
-                string file = image.ImageFile.Split("\\")[image.ImageFile.Split("\\").Length - 1];
-                string imageFormat = file.Split('.')[file.Split('.').Length - 1];
-                string fileName = file.Split('.')[0];
-                string newFileName = String.Format("{0}{1:yyyyMMddHHmmssfff}.{2}", fileName, DateTime.Now, imageFormat);
+                Byte[] bytes = Convert.FromBase64String(image.ImageFile);
+                string filePath = _env.ContentRootPath + @$"\{Guid.NewGuid()}.{image.ImageFileExtension}";
+                try
+                {
+                    System.IO.File.WriteAllBytes(filePath, bytes);
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                
+                //string file = image.ImageFile.Split("\\")[image.ImageFile.Split("\\").Length - 1];
+                //string imageFormat = file.Split('.')[file.Split('.').Length - 1];
+                string fileName = filePath.Split("\\")[filePath.Split("\\").Length - 1];
+                //string newFileName = String.Format("{0}{1:yyyyMMddHHmmssfff}.{2}", fileName, DateTime.Now, imageFormat);
 
                 // Uploading an Image to the MinIO bucket
-                await minio.PutObjectAsync("images", newFileName, image.ImageFile);
+                await minio.PutObjectAsync("images", fileName, filePath);
 
-                image.Id = Guid.NewGuid().ToString();
-                image.Created = DateTime.Now;
-                image.Updated = DateTime.Now;
-                image.ImageFile = newFileName;
-                _context.Images.Add(image);
+                imageToSave.Id = Guid.NewGuid().ToString();
+                imageToSave.Created = DateTime.Now;
+                imageToSave.Updated = DateTime.Now;
+                imageToSave.ImageFile = fileName;
+                imageToSave.UserID = image.UserID;
+                imageToSave.ImageTitle = image.ImageTitle;
+                _context.Images.Add(imageToSave);
                 _context.SaveChanges();
+                System.IO.File.Delete(filePath);
                 return Ok();
             }
             return BadRequest();
