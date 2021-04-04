@@ -56,7 +56,5 @@ namespace SOAImageGalleryAPI.Controllers
             fetchedUser.UserPassword = null;
             return Ok(new Response<User>(fetchedUser));
         }
-
-
     }
 }

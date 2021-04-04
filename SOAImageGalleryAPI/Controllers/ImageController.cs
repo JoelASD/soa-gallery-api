@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.IO;
 using SOAImageGalleryAPI.Models;
 using SOAImageGalleryAPI.Wrappers;
 using SOAImageGalleryAPI.Filter;
@@ -24,13 +23,23 @@ namespace SOAImageGalleryAPI.Controllers
         private readonly IUriService _uriService;
         private readonly IConfiguration _config;
         private readonly IWebHostEnvironment _env;
+        private MinioClient _minio;
+
         public ImageController(DataContext context, IUriService uriService, IConfiguration config, IWebHostEnvironment env)
         {
             _context = context;
             _uriService = uriService;
             _config = config;
             _env = env;
-        }
+            _minio = new MinioClient(
+                EnvVars.GetEnvVar(_env.EnvironmentName, _config)[0],
+                EnvVars.GetEnvVar(_env.EnvironmentName, _config)[1],
+                EnvVars.GetEnvVar(_env.EnvironmentName, _config)[2]
+                );
+    }
+
+        
+        
 
         // Getting paged images, max 10
         [HttpGet]
@@ -56,17 +65,25 @@ namespace SOAImageGalleryAPI.Controllers
 
         // Adding an image
         [HttpPost]
-        public async Task<ActionResult> AddImage([FromBody]ImageFromBody image)
+        public async Task<ActionResult> AddImage([FromBody]Image image)
         {
             Image imageToSave = new Image();
 
-            string[] minIoCreds = EnvVars.GetEnvVar(_env.EnvironmentName, _config);
+            //string[] minIoCreds = EnvVars.GetEnvVar(_env.EnvironmentName, _config);
 
-            var minio = new MinioClient(minIoCreds[0], minIoCreds[1], minIoCreds[2]);
+            //var minio = new MinioClient(minIoCreds[0], minIoCreds[1], minIoCreds[2]);
             if (ModelState.IsValid)
             {
-                Byte[] bytes = Convert.FromBase64String(image.ImageFile);
-                string filePath = _env.ContentRootPath + @$"\{Guid.NewGuid()}.{image.ImageFileExtension}";
+                // Parsing the image content into extension and content
+                string[] imageContent = image.ImageFile.Split(',');
+
+                // Converting from base64 to bytes
+                Byte[] bytes = Convert.FromBase64String(imageContent[1]);
+
+                // Creating the file path
+                string filePath = _env.ContentRootPath + @$"\{Guid.NewGuid()}.{imageContent[0]}";
+
+                // Saving the file locally
                 try
                 {
                     System.IO.File.WriteAllBytes(filePath, bytes);
@@ -74,25 +91,36 @@ namespace SOAImageGalleryAPI.Controllers
                 catch(Exception ex)
                 {
                     Console.WriteLine(ex.Message);
+                    throw;
                 }
                 
-                //string file = image.ImageFile.Split("\\")[image.ImageFile.Split("\\").Length - 1];
-                //string imageFormat = file.Split('.')[file.Split('.').Length - 1];
+                // Parsing the file name from the file path
                 string fileName = filePath.Split("\\")[filePath.Split("\\").Length - 1];
-                //string newFileName = String.Format("{0}{1:yyyyMMddHHmmssfff}.{2}", fileName, DateTime.Now, imageFormat);
+
+                // Adding nesessary properties to the image object 
+                image.Id = Guid.NewGuid().ToString();
+                image.Created = DateTime.Now;
+                image.Updated = DateTime.Now;
+                image.ImageFile = fileName;
 
                 // Uploading an Image to the MinIO bucket
-                await minio.PutObjectAsync("images", fileName, filePath);
-
-                imageToSave.Id = Guid.NewGuid().ToString();
-                imageToSave.Created = DateTime.Now;
-                imageToSave.Updated = DateTime.Now;
-                imageToSave.ImageFile = fileName;
-                imageToSave.UserID = image.UserID;
-                imageToSave.ImageTitle = image.ImageTitle;
-                _context.Images.Add(imageToSave);
-                _context.SaveChanges();
+                // Saving image data to the database
+                try
+                {
+                    await _minio.PutObjectAsync("images", fileName, filePath);
+                    _context.Images.Add(image);
+                    _context.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    System.IO.File.Delete(filePath);
+                    Console.WriteLine(ex.Message);
+                    throw;
+                }
+                
+                // Deleting the image from the local directory
                 System.IO.File.Delete(filePath);
+
                 return Ok();
             }
             return BadRequest();
@@ -108,29 +136,50 @@ namespace SOAImageGalleryAPI.Controllers
 
         // Editing an image
         [HttpPut]
-        public IActionResult EditImage([FromBody] Image image)
+        public async Task<IActionResult> EditImage([FromBody] Image image)
         {
-            if (ModelState.IsValid)
+            try
             {
-                image.Updated = DateTime.Now;
-                _context.Images.Update(image);
-                _context.SaveChanges();
-                return Ok();
+                if (image.ImageFile != null)
+                {
+
+                }
+                if (ModelState.IsValid)
+                {
+                    image.Updated = DateTime.Now;
+                    _context.Images.Update(image);
+                    _context.SaveChanges();
+                    return Ok();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
             }
             return BadRequest();
         }
 
         // Deleting an image
-        [HttpDelete("{id}")]
-        public IActionResult DeleteImage(string id)
+        [HttpDelete("{file_name}")]
+        public async Task<IActionResult> DeleteImage(string file_name)
         {
-            var data = _context.Images.FirstOrDefault(i => i.Id == id);
-            if(data == null)
+            try
             {
-                return NotFound();
+                var data = _context.Images.FirstOrDefault(i => i.ImageFile == file_name);
+                if (data == null)
+                {
+                    return NotFound();
+                }
+                await _minio.RemoveObjectAsync("images", file_name);
+                _context.Images.Remove(data);
+                _context.SaveChanges();
             }
-            _context.Images.Remove(data);
-            _context.SaveChanges();
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
             return Ok();
         }
     }
