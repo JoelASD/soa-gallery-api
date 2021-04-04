@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SOAImageGalleryAPI.Configuration;
+using SOAImageGalleryAPI.Models;
 using SOAImageGalleryAPI.Models.Dto.Requests;
 using SOAImageGalleryAPI.Models.Dto.Responses;
 using System;
@@ -19,10 +20,10 @@ namespace SOAImageGalleryAPI.Controllers
     [ApiController]
     public class UserAuthController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<User> _userManager;
         private readonly JwtConfig _jwtConfig;
 
-        public UserAuthController(UserManager<IdentityUser> userManager, IOptionsMonitor<JwtConfig> optionsMonitor)
+        public UserAuthController(UserManager<User> userManager, IOptionsMonitor<JwtConfig> optionsMonitor)
         {
             _userManager = userManager;
             _jwtConfig = optionsMonitor.CurrentValue;
@@ -46,7 +47,7 @@ namespace SOAImageGalleryAPI.Controllers
                     });
                 }
 
-                var newUser = new IdentityUser() { Email = user.Email, UserName = user.UserName };
+                var newUser = new User() { Email = user.Email, UserName = user.UserName };
                 var isCreated = await _userManager.CreateAsync(newUser, user.Password);
 
                 if(isCreated.Succeeded)

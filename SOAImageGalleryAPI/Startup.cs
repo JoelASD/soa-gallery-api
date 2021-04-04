@@ -62,7 +62,7 @@ namespace SOAImageGalleryAPI
             });
 
 
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<DataContext>();
 
             services.AddHttpContextAccessor();
