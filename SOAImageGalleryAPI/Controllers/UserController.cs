@@ -16,7 +16,7 @@ namespace SOAImageGalleryAPI.Controllers
     [ApiController]
     public class UserController : Controller
     {
-        private DataContext _context = null;
+        /*private DataContext _context = null;
         public UserController(DataContext context)
         {
             _context = context;
@@ -55,7 +55,7 @@ namespace SOAImageGalleryAPI.Controllers
             }
             fetchedUser.UserPassword = null;
             return Ok(new Response<User>(fetchedUser));
-        }
+        }*/
 
 
     }
