@@ -41,7 +41,10 @@ namespace SOAImageGalleryAPI
             services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
 
             //services.AddDbContext<DataContext>(p => p.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+<<<<<<< HEAD
             services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
+=======
+>>>>>>> 72eb9c66fc68c580e7fbc033ad0e6af8f6501d44
             Console.WriteLine(CurrentEnvironment.EnvironmentName);
             Console.WriteLine(CurrentEnvironment.IsDevelopment());
             Console.WriteLine(CurrentEnvironment.IsProduction());
