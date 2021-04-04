@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace SOAImageGalleryAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20210403202128_updated_comment_model")]
-    partial class updated_comment_model
+    [Migration("20210404131853_New initial")]
+    partial class Newinitial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

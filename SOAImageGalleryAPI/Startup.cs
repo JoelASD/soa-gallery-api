@@ -61,10 +61,9 @@ namespace SOAImageGalleryAPI
                 };
             });
 
-            services.Add
 
-            services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<DbContext>();
+            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddEntityFrameworkStores<DataContext>();
 
             services.AddHttpContextAccessor();
             services.AddSingleton<IUriService>(o =>
@@ -95,9 +94,9 @@ namespace SOAImageGalleryAPI
 
             app.UseRouting();
 
-            app.UseAuthorization();
-
             app.UseAuthentication();
+
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

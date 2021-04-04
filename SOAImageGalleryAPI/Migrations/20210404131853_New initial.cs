@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SOAImageGalleryAPI.Migrations
 {
-    public partial class updatedmodels : Migration
+    public partial class Newinitial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -45,35 +45,27 @@ namespace SOAImageGalleryAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Comment",
+                name: "Comments",
                 columns: table => new
                 {
                     CommentId = table.Column<string>(type: "text", nullable: false),
                     CommentText = table.Column<string>(type: "text", nullable: true),
-                    CommentParentID = table.Column<string>(type: "text", nullable: true),
                     UserID = table.Column<string>(type: "text", nullable: true),
                     ImageID = table.Column<string>(type: "text", nullable: true),
                     Created = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    Updated = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    CommentId1 = table.Column<string>(type: "text", nullable: true)
+                    Updated = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Comment", x => x.CommentId);
+                    table.PrimaryKey("PK_Comments", x => x.CommentId);
                     table.ForeignKey(
-                        name: "FK_Comment_Comment_CommentId1",
-                        column: x => x.CommentId1,
-                        principalTable: "Comment",
-                        principalColumn: "CommentId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Comment_Images_ImageID",
+                        name: "FK_Comments_Images_ImageID",
                         column: x => x.ImageID,
                         principalTable: "Images",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Comment_Users_UserID",
+                        name: "FK_Comments_Users_UserID",
                         column: x => x.UserID,
                         principalTable: "Users",
                         principalColumn: "UserId",
@@ -136,18 +128,13 @@ namespace SOAImageGalleryAPI.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comment_CommentId1",
-                table: "Comment",
-                column: "CommentId1");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Comment_ImageID",
-                table: "Comment",
+                name: "IX_Comments_ImageID",
+                table: "Comments",
                 column: "ImageID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comment_UserID",
-                table: "Comment",
+                name: "IX_Comments_UserID",
+                table: "Comments",
                 column: "UserID");
 
             migrationBuilder.CreateIndex(
@@ -179,7 +166,7 @@ namespace SOAImageGalleryAPI.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Comment");
+                name: "Comments");
 
             migrationBuilder.DropTable(
                 name: "UserHasFavourite");

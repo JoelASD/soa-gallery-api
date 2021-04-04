@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace SOAImageGalleryAPI.Models
 {
-    public class User : IdentityUser
+    public class User
     {
         public string UserId { get; set; }
-        //public string UserName { get; set; }
+        public string UserName { get; set; }
         public string UserPassword { get; set; }
         public List<Comment> Comments { get; set; }
         public List<Vote> Votes { get; set; }
