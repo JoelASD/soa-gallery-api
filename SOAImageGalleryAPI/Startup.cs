@@ -41,6 +41,7 @@ namespace SOAImageGalleryAPI
             services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
 
             //services.AddDbContext<DataContext>(p => p.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+            services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
             Console.WriteLine(CurrentEnvironment.EnvironmentName);
             Console.WriteLine(CurrentEnvironment.IsDevelopment());
             Console.WriteLine(CurrentEnvironment.IsProduction());
@@ -77,7 +78,6 @@ namespace SOAImageGalleryAPI
                     ValidateLifetime = true
                 };
             });
-
 
             services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<DataContext>();

@@ -8,9 +8,6 @@ namespace SOAImageGalleryAPI.Models
 {
     public class User : IdentityUser
     {
-        //public string UserId { get; set; }
-        //public string UserName { get; set; }
-        //public string UserPassword { get; set; }
         public List<Comment> Comments { get; set; }
         public List<Vote> Votes { get; set; }
         public List<UserHasFavourite> Favourites { get; set; }
