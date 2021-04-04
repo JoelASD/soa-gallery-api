@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace SOAImageGalleryAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20210320123253_updated-models")]
-    partial class updatedmodels
+    [Migration("20210404131853_New initial")]
+    partial class Newinitial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -24,12 +24,6 @@ namespace SOAImageGalleryAPI.Migrations
             modelBuilder.Entity("SOAImageGalleryAPI.Models.Comment", b =>
                 {
                     b.Property<string>("CommentId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CommentId1")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CommentParentID")
                         .HasColumnType("text");
 
                     b.Property<string>("CommentText")
@@ -49,13 +43,11 @@ namespace SOAImageGalleryAPI.Migrations
 
                     b.HasKey("CommentId");
 
-                    b.HasIndex("CommentId1");
-
                     b.HasIndex("ImageID");
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Comment");
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("SOAImageGalleryAPI.Models.Image", b =>
@@ -164,10 +156,6 @@ namespace SOAImageGalleryAPI.Migrations
 
             modelBuilder.Entity("SOAImageGalleryAPI.Models.Comment", b =>
                 {
-                    b.HasOne("SOAImageGalleryAPI.Models.Comment", null)
-                        .WithMany("Comments")
-                        .HasForeignKey("CommentId1");
-
                     b.HasOne("SOAImageGalleryAPI.Models.Image", "Image")
                         .WithMany()
                         .HasForeignKey("ImageID");
@@ -218,11 +206,6 @@ namespace SOAImageGalleryAPI.Migrations
                     b.Navigation("Image");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SOAImageGalleryAPI.Models.Comment", b =>
-                {
-                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("SOAImageGalleryAPI.Models.Image", b =>
