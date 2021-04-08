@@ -14,8 +14,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Net.Http.Headers;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -141,7 +139,11 @@ namespace SOAImageGalleryAPI.Controllers
         {
             var image = _context.Images.FirstOrDefault(i => i.Id == id);
             image.Comments = _context.Comments.Where(c => c.ImageID == image.Id).ToList();
-            image.Votes = _context.Votes.Where(v => v.ImageID == image.Id).ToList();
+            //image.Votes = _context.Votes.Where(v => v.ImageID == image.Id).ToList();
+            foreach (Comment c in image.Comments)
+            {
+                c.Image = null;
+            }
             return Ok(new Response<Image>(image));
         }
 
