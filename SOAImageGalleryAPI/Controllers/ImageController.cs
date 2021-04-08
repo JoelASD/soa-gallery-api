@@ -14,6 +14,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Net.Http.Headers;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -165,15 +167,24 @@ namespace SOAImageGalleryAPI.Controllers
 
         // Deleting an image
         [HttpDelete("{file_name}")]
-        public async Task<IActionResult> DeleteImage(string file_name)
+        public async Task<IActionResult> DeleteImage(string file_name, [FromHeader] string Authorization)
         {
+            string imageFile = "";
             try
             {
                 var data = _context.Images.FirstOrDefault(i => i.ImageFile == file_name);
+
                 if (data == null)
                 {
-                    return NotFound();
+                    return NotFound(new Response<string>(error: "The image does not exist"));
                 }
+
+                if (data.UserID != TokenDecoder.Decode(Authorization))
+                {
+                    return BadRequest(new Response<string>(error: "Authorization error"));
+                }
+
+                imageFile = data.ImageFile;
                 await _minio.RemoveObjectAsync("images", file_name);
                 _context.Images.Remove(data);
                 _context.SaveChanges();
@@ -183,6 +194,14 @@ namespace SOAImageGalleryAPI.Controllers
                 Console.WriteLine(ex.Message);
                 throw;
             }
+            return Ok(/*new Response<T>(message: $"Image {imageFile} has been deleted succesfully")*/);
+        }
+        // Deleting an image
+        [HttpGet("/test")]
+        public async Task<IActionResult> TestToken([FromHeader] string authorization, string file_name)
+        {
+            string userId = TokenDecoder.Decode(authorization);
+            Console.WriteLine("ID: " + userId);
             return Ok();
         }
     }
