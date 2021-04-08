@@ -14,8 +14,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Net.Http.Headers;
-using System.IdentityModel.Tokens.Jwt;
 using SOAImageGalleryAPI.Models.Dto;
 
 namespace SOAImageGalleryAPI.Controllers
