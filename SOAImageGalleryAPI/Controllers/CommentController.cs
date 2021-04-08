@@ -25,7 +25,7 @@ namespace SOAImageGalleryAPI.Controllers
         // Add comment to image
         //[HttpPost("/image/{id}/comment")]
         [HttpPost]
-        public ActionResult AddComment([FromBody] Comment comment)
+        public IActionResult AddComment([FromBody] Comment comment)
         {
             if (ModelState.IsValid)
             {
