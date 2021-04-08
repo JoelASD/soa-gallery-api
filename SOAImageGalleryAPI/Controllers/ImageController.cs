@@ -136,6 +136,7 @@ namespace SOAImageGalleryAPI.Controllers
         public IActionResult GetOneImage(string id)
         {
             var image = _context.Images.FirstOrDefault(i => i.Id == id);
+            image.Comments = _context.Comments.Where(c => c.ImageID == image.Id).ToList();
             return Ok(new Response<Image>(image));
         }
 

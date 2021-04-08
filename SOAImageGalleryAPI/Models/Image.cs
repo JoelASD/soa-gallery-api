@@ -14,6 +14,7 @@ namespace SOAImageGalleryAPI.Models
         public User User { get; set; }
         public List<Vote> Votes { get; set; }
         public List<UserHasFavourite> Favourites { get; set; }
+        public List<Comment> Comments { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
         

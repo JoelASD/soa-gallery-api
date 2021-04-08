@@ -401,7 +401,7 @@ namespace SOAImageGalleryAPI.Migrations
             modelBuilder.Entity("SOAImageGalleryAPI.Models.Comment", b =>
                 {
                     b.HasOne("SOAImageGalleryAPI.Models.Image", "Image")
-                        .WithMany()
+                        .WithMany("Comments")
                         .HasForeignKey("ImageID");
 
                     b.HasOne("SOAImageGalleryAPI.Models.User", "User")
@@ -454,6 +454,8 @@ namespace SOAImageGalleryAPI.Migrations
 
             modelBuilder.Entity("SOAImageGalleryAPI.Models.Image", b =>
                 {
+                    b.Navigation("Comments");
+
                     b.Navigation("Favourites");
 
                     b.Navigation("Votes");
