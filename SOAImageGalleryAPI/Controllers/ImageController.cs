@@ -126,7 +126,11 @@ namespace SOAImageGalleryAPI.Controllers
                 // Deleting the image from the local directory
                 System.IO.File.Delete(filePath);
 
-                return Ok();
+                return Ok(new Response<Image>(image)
+                {
+                    Message = "Image has been added succesfully",
+                    Succeeded = true
+                });
             }
             return BadRequest();
         }
@@ -137,6 +141,7 @@ namespace SOAImageGalleryAPI.Controllers
         {
             var image = _context.Images.FirstOrDefault(i => i.Id == id);
             image.Comments = _context.Comments.Where(c => c.ImageID == image.Id).ToList();
+            image.Votes = _context.Votes.Where(v => v.ImageID == image.Id).ToList();
             return Ok(new Response<Image>(image));
         }
 
@@ -195,7 +200,8 @@ namespace SOAImageGalleryAPI.Controllers
                 Console.WriteLine(ex.Message);
                 throw;
             }
-            return Ok(/*new Response<T>(message: $"Image {imageFile} has been deleted succesfully")*/);
+
+            return Ok(new Response<string>($"Image {imageFile} is deleted succesfully"));
         }
         // Deleting an image
         [HttpGet("/test")]
