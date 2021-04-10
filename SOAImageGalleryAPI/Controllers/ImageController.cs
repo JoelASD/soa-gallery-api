@@ -59,6 +59,7 @@ namespace SOAImageGalleryAPI.Controllers
                 .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                 .Take(validFilter.PageSize)
                 .ToList();
+<<<<<<< HEAD
             var totalRecords = _context.Images.Count(); // Total record count
 
             // Creating better return type: ImageGto
@@ -66,6 +67,15 @@ namespace SOAImageGalleryAPI.Controllers
 
             foreach (var image in pagedData)
             {
+=======
+            var totalRecords = _context.Images.Count();
+
+            /*var data = new List<ImageDto>();
+
+            foreach (var image in pagedData)
+            {
+                _context.Entry(image).Collection(i => i.Comments).Load();
+>>>>>>> Added VoteController
 
                 var i = new ImageDto
                 {
@@ -73,12 +83,33 @@ namespace SOAImageGalleryAPI.Controllers
                     UserId = image.UserID,
                     ImageFile = image.ImageFile,
                     ImageTitle = image.ImageFile,
+<<<<<<< HEAD
                 };
 
                 data.Add(i);
             }
 
         var pagedResponse = PaginationHelper.CreatePagedReponse<ImageDto>(data, validFilter, totalRecords, _uriService, route);
+=======
+                    Comments = new List<CommentDto>()
+                };
+
+                foreach (var c in image.Comments)
+                {
+                    var comment = new CommentDto
+                    {
+                        CommentId = c.CommentId,
+                        UserId = c.UserID,
+                        CommentText = c.CommentText
+                    };
+                    i.Comments.Add(comment);
+                }
+
+                data.Add(i);
+            }*/
+
+            var pagedResponse = PaginationHelper.CreatePagedReponse<Image>(pagedData, validFilter, totalRecords, _uriService, route);
+>>>>>>> Added VoteController
             return Ok(pagedResponse);
         }
 
@@ -198,21 +229,28 @@ namespace SOAImageGalleryAPI.Controllers
                 // Loading image's comments
                 _context.Entry(image).Collection(i => i.Comments).Load();
 
+                _context.Entry(image).Collection(v => v.Votes).Load();
+
                 var data = new ImageDto
                 {
                     ImageId = image.Id,
                     UserId = image.UserID,
                     ImageFile = image.ImageFile,
                     ImageTitle = image.ImageFile,
+                    VoteSum = image.Votes.Sum(x => x.Voted),
                     Comments = new List<CommentDto>()
                 };
 
                 foreach (var c in image.Comments)
                 {
+                    var user = _context.Users.FirstOrDefault(u => u.Id == c.UserID);
                     var comment = new CommentDto
                     {
                         CommentId = c.CommentId,
-                        UserId = c.UserID,
+                        User = new UserDto { 
+                            UserId = user.Id,
+                            UserName = user.UserName
+                        },
                         CommentText = c.CommentText
                     };
                     data.Comments.Add(comment);
@@ -229,7 +267,7 @@ namespace SOAImageGalleryAPI.Controllers
                 return BadRequest(new Response<CommentDto>()
                 {
                     Succeeded = false,
-                    Errors = new[] { e.ToString() }
+                    Errors = new[] { e.Message }
                 });
             }
         }

@@ -8,7 +8,8 @@ namespace SOAImageGalleryAPI.Models.Dto
     public class CommentDto
     {
         public string CommentId { get; set; }
-        public string UserId { get; set; }
+        //public string UserId { get; set; }
+        public UserDto User { get; set; }
         public string CommentText { get; set; }
         public string ImageId { get; set; }
     }

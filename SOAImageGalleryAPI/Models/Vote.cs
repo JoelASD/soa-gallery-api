@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,6 +9,7 @@ namespace SOAImageGalleryAPI.Models
     public class Vote
     {
         public string VoteId { get; set; }
+        [RegularExpression("[-]?(1)")]
         public int Voted { get; set; }
         public string UserID { get; set; }
         public User User { get; set; }
