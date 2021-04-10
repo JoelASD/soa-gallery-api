@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Net.Http.Headers;
 using System.IdentityModel.Tokens.Jwt;
+using SOAImageGalleryAPI.Models.Dto;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -135,9 +136,58 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpGet("{id}")]
         public IActionResult GetOneImage(string id)
         {
+
             var image = _context.Images.FirstOrDefault(i => i.Id == id);
-            image.Comments = _context.Comments.Where(c => c.ImageID == image.Id).ToList();
-            return Ok(new Response<Image>(image));
+
+            if (image == null)
+            {
+                return NotFound(new Response<string>()
+                {
+                    Data = id,
+                    Succeeded = false,
+                    Errors = new[] { "Couldn't find image" }
+                });
+            }
+
+            try
+            {
+                _context.Entry(image).Collection(i => i.Comments).Load();
+
+                var data = new ImageDto
+                {
+                    ImageId = image.Id,
+                    UserId = image.UserID,
+                    ImageFile = image.ImageFile,
+                    ImageTitle = image.ImageFile,
+                    Comments = new List<CommentDto>()
+                };
+
+                foreach (var c in image.Comments)
+                {
+                    var comment = new CommentDto
+                    {
+                        CommentId = c.CommentId,
+                        UserId = c.UserID,
+                        CommentText = c.CommentText
+                    };
+                    data.Comments.Add(comment);
+                }
+
+                return Ok(new Response<ImageDto>()
+                {
+                    Data = data,
+                    Succeeded = true
+                });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new Response<CommentDto>()
+                {
+                    Succeeded = false,
+                    Errors = new[] { e.ToString() }
+                });
+            }
+            
         }
 
         // Editing an image
