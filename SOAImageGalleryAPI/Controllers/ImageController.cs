@@ -50,13 +50,35 @@ namespace SOAImageGalleryAPI.Controllers
         public ActionResult GetAllPagedImages([FromQuery] PaginationFilter filter)
         {
             var route = Request.Path.Value;
+
+            // Creating pagination filter
             var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+
+            // Getting paged images
             var pagedData = _context.Images
                 .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                 .Take(validFilter.PageSize)
                 .ToList();
-            var totalRecords = _context.Images.Count();
-            var pagedResponse = PaginationHelper.CreatePagedReponse<Image>(pagedData, validFilter, totalRecords, _uriService, route);
+            var totalRecords = _context.Images.Count(); // Total record count
+
+            // Creating better return type: ImageGto
+            var data = new List<ImageDto>();
+
+            foreach (var image in pagedData)
+            {
+
+                var i = new ImageDto
+                {
+                    ImageId = image.Id,
+                    UserId = image.UserID,
+                    ImageFile = image.ImageFile,
+                    ImageTitle = image.ImageFile,
+                };
+
+                data.Add(i);
+            }
+
+        var pagedResponse = PaginationHelper.CreatePagedReponse<ImageDto>(data, validFilter, totalRecords, _uriService, route);
             return Ok(pagedResponse);
         }
 
@@ -64,7 +86,29 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpGet("/image/all")]
         public ActionResult GetImages()
         {
-            return Ok(new Response<List<Image>>(_context.Images.ToList()));
+            List<Image> images = _context.Images.ToList(); // Getting all images
+
+            // Converting Images of better return type: ImageDto
+            List<ImageDto> data = new List<ImageDto>();
+
+            foreach (var image in images)
+            {
+
+                var i = new ImageDto
+                {
+                    ImageId = image.Id,
+                    UserId = image.UserID,
+                    ImageFile = image.ImageFile,
+                    ImageTitle = image.ImageFile,
+                };
+
+                data.Add(i);
+            }
+            return Ok(new Response<List<ImageDto>>() 
+            { 
+                Succeeded = true,
+                Data = data
+            });
         }
 
         // Adding an image
@@ -73,9 +117,6 @@ namespace SOAImageGalleryAPI.Controllers
         {
             Image imageToSave = new Image();
 
-            //string[] minIoCreds = EnvVars.GetEnvVar(_env.EnvironmentName, _config);
-
-            //var minio = new MinioClient(minIoCreds[0], minIoCreds[1], minIoCreds[2]);
             if (ModelState.IsValid)
             {
                 // Parsing the image content into extension and content
@@ -138,9 +179,10 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpGet("{id}")]
         public IActionResult GetOneImage(string id)
         {
-
+            // Getting one image by ID
             var image = _context.Images.FirstOrDefault(i => i.Id == id);
 
+            // CHecking if image is found
             if (image == null)
             {
                 return NotFound(new Response<string>()
@@ -153,6 +195,7 @@ namespace SOAImageGalleryAPI.Controllers
 
             try
             {
+                // Loading image's comments
                 _context.Entry(image).Collection(i => i.Comments).Load();
 
                 var data = new ImageDto
@@ -193,28 +236,67 @@ namespace SOAImageGalleryAPI.Controllers
 
         // Editing an image
         [HttpPut]
-        public async Task<IActionResult> EditImage([FromBody] Image image)
+        public IActionResult EditImage([FromHeader] string Authorization, [FromBody] ImageDto image)
         {
             try
             {
-                if (image.ImageFile != null)
+                if (!ModelState.IsValid)
                 {
+                    return BadRequest(new Response<ImageDto>() 
+                    { 
+                        Data = image,
+                        Message = "Check the request body",
+                        Succeeded = false,
+                        Errors = new[] { "Request body is incorrect" }
+                    });
+                }
 
-                }
-                if (ModelState.IsValid)
+                var imageToEdit = _context.Images.FirstOrDefault(i => i.Id == image.ImageId);
+
+                if (imageToEdit == null)
                 {
-                    image.Updated = DateTime.Now;
-                    _context.Images.Update(image);
-                    _context.SaveChanges();
-                    return Ok();
+                    return NotFound(new Response<string>()
+                    {
+                        Data = image.ImageId,
+                        Succeeded = false,
+                        Errors = new[] { "Couldn't find the image" }
+                    });
                 }
+
+                if (imageToEdit.UserID != TokenDecoder.Decode(Authorization))
+                {
+                    return BadRequest(new Response<ImageDto>()
+                    {
+                        Succeeded = false,
+                        Message = "User can only edit their own images",
+                        Errors = new[] { "Access denied, authorization error" }
+                    });
+                }
+
+
+                imageToEdit.ImageTitle = image.ImageTitle;
+                imageToEdit.Updated = DateTime.Now;
+                _context.Images.Update(imageToEdit);
+                _context.SaveChanges();
+
+                image.UserId = imageToEdit.UserID;
+
+                return Ok(new Response<ImageDto>()
+                {
+                    Data = image,
+                    Message = "Image updated successfully",
+                    Succeeded = true
+                });
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                throw;
+                return BadRequest(new Response<string>()
+                {
+                    Succeeded = false,
+                    Errors = new[] { ex.Message }
+                });
             }
-            return BadRequest();
         }
 
         // Deleting an image
@@ -249,7 +331,98 @@ namespace SOAImageGalleryAPI.Controllers
 
             return Ok(new Response<string>($"Image {imageFile} is deleted succesfully"));
         }
-        // Deleting an image
+
+        // Getting top 5 trending images within last 24h
+        [HttpGet("trending")]
+        public IActionResult GetTrendingImages()
+        {
+            try
+            {
+                DateTime date = DateTime.UtcNow.Date.AddDays(-1);
+                var imagesToReturn = _context.Set<Vote>()
+                    .Where(x => x.Updated >= date)
+                    .GroupBy(x => x.ImageID)
+                    .Select(x => new { ImageID = x.Key, VoteSum = x.Sum(a => a.Voted) })
+                    .OrderByDescending(x => x.VoteSum)
+                    .Select(x => new ImageDto { 
+                        ImageId = x.ImageID,
+                        VoteSum = x.VoteSum
+                    })
+                    .Take(5)
+                    .ToList();
+
+                List<ImageDto> data = new List<ImageDto>();
+
+                foreach (ImageDto image in imagesToReturn)
+                {
+                    Image i = _context.Images.FirstOrDefault(i => i.Id == image.ImageId);
+                    data.Add(new ImageDto
+                    {
+                        ImageId = image.ImageId,
+                        ImageTitle = i.ImageTitle,
+                        ImageFile = i.ImageFile,
+                        VoteSum = image.VoteSum
+                    });
+                }
+
+                return Ok(new Response<List<ImageDto>>()
+                { 
+                    Data = data,
+                    Succeeded = true
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response<string>()
+                {
+                    Message = "Oops! Somehting is not right...",
+                    Errors = new[] { ex.Message }
+                });
+            }
+        }
+
+        // Getting all the images of the specific user
+        [HttpGet("user/{user_id}")]
+        public IActionResult GetUserImages(string user_id)
+        {
+            try
+            {
+                List<Image> images = _context.Images.Where(i => i.UserID == user_id).ToList();
+                List<ImageDto> data = new List<ImageDto>();
+
+                foreach (var image in images)
+                {
+
+                    var i = new ImageDto
+                    {
+                        ImageId = image.Id,
+                        UserId = image.UserID,
+                        ImageFile = image.ImageFile,
+                        ImageTitle = image.ImageFile,
+                    };
+
+                    data.Add(i);
+                }
+
+                return Ok(new Response<List<ImageDto>>()
+                {
+                    Succeeded = true,
+                    Message = "Success",
+                    Data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response<string>()
+                {
+                    Message = "Oops! Somehting is not right...",
+                    Errors = new[] { ex.Message }
+                });
+                throw;
+            }
+        }
+
+        // Test API
         [HttpGet("/test")]
         public async Task<IActionResult> TestToken([FromHeader] string authorization, string file_name)
         {
