@@ -54,7 +54,10 @@ namespace SOAImageGalleryAPI.Controllers
                     {
                         Data = new CommentDto { 
                             CommentId = newComment.CommentId,
-                            UserId = newComment.UserID,
+                            User = new UserDto
+                            {
+                                UserId = newComment.UserID
+                            },
                             CommentText = newComment.CommentText,
                             ImageId = newComment.ImageID
                         },
@@ -67,7 +70,7 @@ namespace SOAImageGalleryAPI.Controllers
                     return BadRequest(new Response<CommentDto>()
                     {
                         Succeeded = false,
-                        Errors = new[] { e.ToString() }
+                        Errors = new[] { e.Message }
                     });
                 }
             }
@@ -132,7 +135,9 @@ namespace SOAImageGalleryAPI.Controllers
                 {
                     Data = new CommentDto { 
                         CommentId = existingComment.CommentId,
-                        UserId = existingComment.UserID,
+                        User = new UserDto { 
+                            UserId = existingComment.UserID
+                        },
                         CommentText = existingComment.CommentText,
                         ImageId = existingComment.ImageID
                     },
@@ -145,7 +150,7 @@ namespace SOAImageGalleryAPI.Controllers
                 return BadRequest(new Response<CommentDto>()
                 {
                     Succeeded = false,
-                    Errors = new[] { e.ToString() }
+                    Errors = new[] { e.Message }
                 });
             }
         }
@@ -193,7 +198,7 @@ namespace SOAImageGalleryAPI.Controllers
                 return BadRequest(new Response<CommentDto>()
                 {
                     Succeeded = false,
-                    Errors = new[] { e.ToString() }
+                    Errors = new[] { e.Message }
                 });
             }
         }
