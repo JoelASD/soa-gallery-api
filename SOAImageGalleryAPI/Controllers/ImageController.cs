@@ -59,7 +59,7 @@ namespace SOAImageGalleryAPI.Controllers
                 .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                 .Take(validFilter.PageSize)
                 .ToList();
-<<<<<<< HEAD
+
             var totalRecords = _context.Images.Count(); // Total record count
 
             // Creating better return type: ImageGto
@@ -67,15 +67,6 @@ namespace SOAImageGalleryAPI.Controllers
 
             foreach (var image in pagedData)
             {
-=======
-            var totalRecords = _context.Images.Count();
-
-            /*var data = new List<ImageDto>();
-
-            foreach (var image in pagedData)
-            {
-                _context.Entry(image).Collection(i => i.Comments).Load();
->>>>>>> Added VoteController
 
                 var i = new ImageDto
                 {
@@ -83,33 +74,13 @@ namespace SOAImageGalleryAPI.Controllers
                     UserId = image.UserID,
                     ImageFile = image.ImageFile,
                     ImageTitle = image.ImageFile,
-<<<<<<< HEAD
                 };
 
                 data.Add(i);
             }
 
-        var pagedResponse = PaginationHelper.CreatePagedReponse<ImageDto>(data, validFilter, totalRecords, _uriService, route);
-=======
-                    Comments = new List<CommentDto>()
-                };
+            var pagedResponse = PaginationHelper.CreatePagedReponse<ImageDto>(data, validFilter, totalRecords, _uriService, route);
 
-                foreach (var c in image.Comments)
-                {
-                    var comment = new CommentDto
-                    {
-                        CommentId = c.CommentId,
-                        UserId = c.UserID,
-                        CommentText = c.CommentText
-                    };
-                    i.Comments.Add(comment);
-                }
-
-                data.Add(i);
-            }*/
-
-            var pagedResponse = PaginationHelper.CreatePagedReponse<Image>(pagedData, validFilter, totalRecords, _uriService, route);
->>>>>>> Added VoteController
             return Ok(pagedResponse);
         }
 
