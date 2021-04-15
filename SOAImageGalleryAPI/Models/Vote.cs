@@ -9,7 +9,6 @@ namespace SOAImageGalleryAPI.Models
     public class Vote
     {
         public string VoteId { get; set; }
-        [RegularExpression("[-]?(1)")]
         public int Voted { get; set; }
         public string UserID { get; set; }
         public User User { get; set; }
