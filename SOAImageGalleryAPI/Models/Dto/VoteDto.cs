@@ -10,6 +10,8 @@ namespace SOAImageGalleryAPI.Models.Dto
     {
         public string VoteId { get; set; }
         [Required]
+        [RegularExpression(@"[-]?(1)",
+            ErrorMessage = "Invalid voted value")]
         public int Voted { get; set; }
         public string UserId { get; set; }
         public string ImageId { get; set; }
