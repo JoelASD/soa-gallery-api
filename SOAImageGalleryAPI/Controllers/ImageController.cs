@@ -382,7 +382,7 @@ namespace SOAImageGalleryAPI.Controllers
         }
 
         // Getting all the images of the specific user
-        [HttpGet("user/{user_id}")]
+        [HttpGet("/image/{user_id}")]
         public IActionResult GetUserImages(string user_id)
         {
             try
@@ -409,6 +409,75 @@ namespace SOAImageGalleryAPI.Controllers
                     Succeeded = true,
                     Message = "Success",
                     Data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response<string>()
+                {
+                    Message = "Oops! Somehting is not right...",
+                    Errors = new[] { ex.Message }
+                });
+                throw;
+            }
+        }
+
+        [HttpPut("{image_id}/favorite")]
+        public IActionResult AddImageToFavorites([FromHeader] string Authorization, string image_id)
+        {
+            try
+            {
+                // Checking if user is logged in
+                if (TokenDecoder.Decode(Authorization) == null)
+                {
+                    return Unauthorized(new Response<string>()
+                    {
+                        Message = "You are not authorized, login first!",
+                        Succeeded = false
+                    });
+                }
+
+                // Checking if image is already in favorites, if so it will be removed from favorites
+                UserHasFavourite favoriteImage = _context.Favorites.FirstOrDefault(f => f.UserID == TokenDecoder.Decode(Authorization) && f.ImageID == image_id);
+                if (favoriteImage != null)
+                {
+                    _context.Favorites.Remove(favoriteImage);
+                    _context.SaveChanges();
+                    return Ok(new Response<string>()
+                    {
+                        Message = "Image has been succesfully removed from favorites",
+                        Succeeded = true
+                    });
+                }
+
+                // CHecking if image exists
+                Image image = _context.Images.FirstOrDefault(i => i.Id == image_id);
+                if (image == null)
+                {
+                    return NotFound(new Response<string>()
+                    {
+                        Message = $"Image with ID: {image_id} does not exist",
+                        Succeeded = false
+                    });
+                }
+
+                // Creating new Favorite Image object and saving it to the database
+                UserHasFavourite uHF = new UserHasFavourite()
+                {
+                    FavouriteID = Guid.NewGuid().ToString(),
+                    UserID = TokenDecoder.Decode(Authorization),
+                    ImageID = image_id,
+                    Created = DateTime.Now,
+                    Updated = DateTime.Now
+                };
+
+                _context.Favorites.Add(uHF);
+                _context.SaveChanges();
+
+                return Ok(new Response<string>()
+                {
+                    Message = "Image has been added to the favorites succesfully",
+                    Succeeded = false
                 });
             }
             catch (Exception ex)
