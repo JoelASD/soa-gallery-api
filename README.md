@@ -17,9 +17,9 @@ Image Gallery API for the Service Oriented Applications Course in JAMK
 
 * GET /user/:user-id/image *
 
-* GET /me/favorites
-* GET /me/favorites/export
-* GET /me/comments
+* GET /me/favorites *
+* GET /me/favorites/export *
+* GET /me/comments *
 
 * POST /auth/register *
 * POST /auth/login *
@@ -51,3 +51,7 @@ Image Gallery API for the Service Oriented Applications Course in JAMK
 * Creating Database Migrations: ```dotnet-ef migrations add InitialCreate```
 * Updating Database: ```dotnet-ef database update```
 * Starting the server: ```dotnet run``` runs on http://localhost:5001
+
+## Google Auth
+* Client ID: 845287079380-rarn3p0kk316olvrq966ca2dkcs1ran1.apps.googleusercontent.com
+* Client Secret: 4scH6tm6pwtMgFYOLrQpECf6
