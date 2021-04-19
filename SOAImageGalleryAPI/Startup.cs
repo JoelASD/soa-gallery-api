@@ -68,11 +68,23 @@ namespace SOAImageGalleryAPI
                 .AddCookie()
             .AddGoogle(options =>
             {
-                IConfigurationSection googleAuthNSection =
+                if(CurrentEnvironment.IsDevelopment())
+                {
+                    IConfigurationSection googleAuthNSection =
                     Configuration.GetSection("Authentication:Google");
 
-                options.ClientId = googleAuthNSection["ClientId"];
-                options.ClientSecret = googleAuthNSection["ClientSecret"];
+                    options.ClientId = googleAuthNSection["ClientId"];
+                    options.ClientSecret = googleAuthNSection["ClientSecret"];
+                } else if (CurrentEnvironment.IsProduction())
+                {
+                    options.ClientId = Environment.GetEnvironmentVariable("GOOGLE_AUTH_CLIENT_ID");
+                    options.ClientSecret = Environment.GetEnvironmentVariable("GOOGLE_AUTH_CLIENT_SECRET");
+                } else
+                {
+                    options.ClientId = Environment.GetEnvironmentVariable("GOOGLE_AUTH_CLIENT_ID");
+                    options.ClientSecret = Environment.GetEnvironmentVariable("GOOGLE_AUTH_CLIENT_SECRET");
+                }
+                
                 //options.Scope.Add("profile");
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.SaveTokens = true;
@@ -84,7 +96,18 @@ namespace SOAImageGalleryAPI
                 options.ClaimActions.MapJsonKey(ClaimTypes.Sid, "sid");
             })
             .AddJwtBearer(jwt => {
-                var key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]);
+                var key = Encoding.ASCII.GetBytes(Configuration[""]);
+                if (CurrentEnvironment.IsDevelopment())
+                {
+                    key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]);
+                } else if (CurrentEnvironment.IsProduction())
+                {
+                    key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET"));
+                } else
+                {
+                    key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET"));
+                }
+
 
                 jwt.SaveToken = true;
                 jwt.TokenValidationParameters = new TokenValidationParameters
