@@ -1,15 +1,19 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using ConsoleApp.PostgreSQL;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SOAImageGalleryAPI.Configuration;
+using SOAImageGalleryAPI.Helpers;
 using SOAImageGalleryAPI.Models;
 using SOAImageGalleryAPI.Models.Dto.Requests;
 using SOAImageGalleryAPI.Models.Dto.Responses;
+using SOAImageGalleryAPI.Wrappers;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,11 +26,13 @@ namespace SOAImageGalleryAPI.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly JwtConfig _jwtConfig;
+        private readonly DataContext _context;
 
-        public UserAuthController(UserManager<User> userManager, IOptionsMonitor<JwtConfig> optionsMonitor)
+        public UserAuthController(UserManager<User> userManager, IOptionsMonitor<JwtConfig> optionsMonitor, DataContext context)
         {
             _userManager = userManager;
             _jwtConfig = optionsMonitor.CurrentValue;
+            _context = context;
         }
 
         // Register user
@@ -128,6 +134,41 @@ namespace SOAImageGalleryAPI.Controllers
                         },
                 Result = false
             });
+        }
+
+        [HttpPost("/logout")] // korjaa paremmaksi
+        public IActionResult Logout([FromHeader] string Authorization)
+        {
+            if (TokenDecoder.Validate(Authorization, _context))
+            {
+                AuthenticationHeaderValue.TryParse(Authorization, out var headerValue);
+
+                var t = new JwtSecurityToken(headerValue.Parameter);
+                string expDate = t.Claims.First(c => c.Type == "exp").Value;
+
+                var ed = Int32.Parse(expDate);
+
+                //DateTime date = DateTime.ParseExact(expDate);
+
+                DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+
+                dateTime = dateTime.AddSeconds(ed);
+
+                JwtBlacklist token = new JwtBlacklist()
+                {
+                    Token = headerValue.Parameter,
+                    Created = DateTime.Now,
+                    Expires = dateTime
+                };
+
+                // fix needed
+                _context.Blacklist.Add(token);
+                _context.SaveChanges();
+
+                return Ok(new Response<DateTime>() { Data = dateTime, Succeeded = true });
+            }
+
+            return BadRequest(new Response<DateTime>() { Succeeded = false, Message = "vittu" });
         }
 
         // Generate JWT

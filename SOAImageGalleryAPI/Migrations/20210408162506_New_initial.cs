@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace SOAImageGalleryAPI.Migrations
 {
-    public partial class Latestversiontest : Migration
+    public partial class New_initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

@@ -3,15 +3,17 @@ using System;
 using ConsoleApp.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace SOAImageGalleryAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20210415081001_add-favorites")]
+    partial class addfavorites
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -266,9 +268,6 @@ namespace SOAImageGalleryAPI.Migrations
                     b.Property<string>("ImageTitle")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsPublic")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTime>("Updated")
                         .HasColumnType("timestamp without time zone");
 
@@ -280,20 +279,6 @@ namespace SOAImageGalleryAPI.Migrations
                     b.HasIndex("UserID");
 
                     b.ToTable("Images");
-                });
-
-            modelBuilder.Entity("SOAImageGalleryAPI.Models.JwtBlacklist", b =>
-                {
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime>("Expires")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("Token")
-                        .HasColumnType("text");
-
-                    b.ToTable("Blacklist");
                 });
 
             modelBuilder.Entity("SOAImageGalleryAPI.Models.UserHasFavourite", b =>
