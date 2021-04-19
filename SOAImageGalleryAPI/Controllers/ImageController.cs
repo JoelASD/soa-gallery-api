@@ -43,9 +43,6 @@ namespace SOAImageGalleryAPI.Controllers
                 );
         }
 
-
-
-
         // Getting paged images, max 10
         [AllowAnonymous]
         [HttpGet]

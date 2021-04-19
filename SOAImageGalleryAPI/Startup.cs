@@ -96,7 +96,7 @@ namespace SOAImageGalleryAPI
                 options.ClaimActions.MapJsonKey(ClaimTypes.Sid, "sid");
             })
             .AddJwtBearer(jwt => {
-                var key = Encoding.ASCII.GetBytes(Configuration[""]);
+                var key = Encoding.ASCII.GetBytes("");
                 if (CurrentEnvironment.IsDevelopment())
                 {
                     key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]);

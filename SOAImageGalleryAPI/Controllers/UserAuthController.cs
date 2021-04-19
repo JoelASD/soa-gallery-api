@@ -264,7 +264,6 @@ namespace SOAImageGalleryAPI.Controllers
             }
         }
 
-        // Generate JWT
         private string GenerateJwt(IdentityUser user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
