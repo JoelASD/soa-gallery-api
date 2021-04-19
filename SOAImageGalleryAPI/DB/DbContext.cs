@@ -16,5 +16,6 @@ namespace ConsoleApp.PostgreSQL
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Vote> Votes { get; set; }
         public DbSet<UserHasFavourite> Favorites { get; set; }
+        public DbSet<JwtBlacklist> Blacklist { get; set; }
     }
 }

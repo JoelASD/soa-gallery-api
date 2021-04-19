@@ -40,12 +40,13 @@ namespace SOAImageGalleryAPI.Controllers
                 EnvVars.GetEnvVar(_env.EnvironmentName, _config)[1],
                 EnvVars.GetEnvVar(_env.EnvironmentName, _config)[2]
                 );
-    }
+        }
 
         
         
 
         // Getting paged images, max 10
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult GetAllPagedImages([FromQuery] PaginationFilter filter)
         {
@@ -178,6 +179,7 @@ namespace SOAImageGalleryAPI.Controllers
         }
 
         // Getting one image
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public IActionResult GetOneImage(string id)
         {
@@ -342,6 +344,7 @@ namespace SOAImageGalleryAPI.Controllers
         }
 
         // Getting top 5 trending images within last 24h
+        [AllowAnonymous]
         [HttpGet("trending")]
         public IActionResult GetTrendingImages()
         {
@@ -391,6 +394,7 @@ namespace SOAImageGalleryAPI.Controllers
         }
 
         // Getting all the images of the specific user
+        [AllowAnonymous]
         [HttpGet("/image/{user_id}")]
         public IActionResult GetUserImages(string user_id)
         {

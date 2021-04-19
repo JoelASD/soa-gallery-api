@@ -9,6 +9,7 @@ namespace SOAImageGalleryAPI.Models.Dto
     {
         public string ImageId { get; set; }
         public string UserId { get; set; }
+        public UserDto User { get; set; }
         public string ImageFile { get; set; }
         public string ImageTitle { get; set; }
         public int VoteSum { get; set; }

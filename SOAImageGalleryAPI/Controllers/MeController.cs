@@ -1,14 +1,21 @@
 ﻿using ConsoleApp.PostgreSQL;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Minio;
+using Minio.DataModel;
 using SOAImageGalleryAPI.Helpers;
 using SOAImageGalleryAPI.Models;
 using SOAImageGalleryAPI.Models.Dto;
+using SOAImageGalleryAPI.Services;
 using SOAImageGalleryAPI.Wrappers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SOAImageGalleryAPI.Controllers
@@ -19,9 +26,21 @@ namespace SOAImageGalleryAPI.Controllers
     public class MeController : Controller
     {
         private DataContext _context = null;
-        public MeController(DataContext context)
+        private readonly IUriService _uriService;
+        private readonly IConfiguration _config;
+        private readonly IWebHostEnvironment _env;
+        private MinioClient _minio;
+        public MeController(DataContext context, IUriService uriService, IConfiguration config, IWebHostEnvironment env)
         {
             _context = context;
+            _uriService = uriService;
+            _config = config;
+            _env = env;
+            _minio = new MinioClient(
+                EnvVars.GetEnvVar(_env.EnvironmentName, _config)[0],
+                EnvVars.GetEnvVar(_env.EnvironmentName, _config)[1],
+                EnvVars.GetEnvVar(_env.EnvironmentName, _config)[2]
+                );
         }
 
         // /me/comments
@@ -79,17 +98,95 @@ namespace SOAImageGalleryAPI.Controllers
             try
             {
                 string uid = TokenDecoder.Decode(Authorization);
-                //var favorites
-                return Ok();
+
+                var favoriteImages = _context.Favorites.Where(f => f.UserID == uid).ToList();
+
+                List<ImageDto> data = new List<ImageDto>();
+
+                foreach (var favorite in favoriteImages)
+                {
+                    Image i = _context.Images.FirstOrDefault(i => i.Id == favorite.ImageID);
+                    User u = _context.Users.FirstOrDefault(u => u.Id == i.UserID);
+                    data.Add(new ImageDto
+                    {
+                        ImageId = i.Id,
+                        ImageTitle = i.ImageTitle,
+                        ImageFile = i.ImageFile,
+                        User = new UserDto
+                        {
+                            UserId = u.Id,
+                            UserName = u.UserName
+                        }
+                    });
+                }
+
+                return Ok(new Response<List<ImageDto>>()
+                {
+                    Data = data,
+                    Succeeded = true
+                });
             }
             catch (Exception e)
             {
-                return BadRequest();
+                return BadRequest(new Response<string>() 
+                {
+                    Succeeded = false,
+                    Message = "Oops! Somehting is not right...",
+                    Errors = new[] { e.Message }
+                });
             }
 
         }
 
         // /me/favorites/export
+        [HttpGet("/me/favorites/export")]
+        public async Task<IActionResult> ExportFavorites([FromHeader] string Authorization)
+        {
+            try
+            {
+                string uid = TokenDecoder.Decode(Authorization);
+
+                var favorites = _context.Favorites.Where(f => f.UserID == uid).ToList();
+
+                List<ZipItem> imgList = new List<ZipItem>();
+
+                foreach (var image in favorites)
+                {
+                    Image img = _context.Images.FirstOrDefault(i => i.Id == image.ImageID);
+
+                    // Checks if image exists and throws exception on case not.
+                    await _minio.StatObjectAsync("images", img.ImageFile);
+
+                    await _minio.GetObjectAsync("images", img.ImageFile, img.ImageFile);
+
+                    MemoryStream stream = new MemoryStream(System.IO.File.ReadAllBytes(img.ImageFile));
+
+                    imgList.Add(new ZipItem(filename: img.ImageFile, content: stream));
+
+                    string filePath = _env.ContentRootPath + @$"\{img.ImageFile}";
+
+                    if (System.IO.File.Exists(filePath)) 
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                        
+                }
+
+                var zipStream = Zipper.Zip(imgList);
+
+                return File(zipStream, "application/octet-stream");
+
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new Response<string>() 
+                {
+                    Succeeded = false,
+                    Message = "Oops! Somehting is not right...",
+                    Errors = new[] { e.Message }
+                });
+            }
+        }
 
     }
 }
