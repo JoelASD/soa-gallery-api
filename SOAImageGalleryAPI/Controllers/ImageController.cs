@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SOAImageGalleryAPI.Models.Dto;
+using System.IO;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -42,84 +43,102 @@ namespace SOAImageGalleryAPI.Controllers
                 );
         }
 
-        
-        
-
         // Getting paged images, max 10
         [AllowAnonymous]
         [HttpGet]
         public ActionResult GetAllPagedImages([FromQuery] PaginationFilter filter)
         {
-            var route = Request.Path.Value;
-
-            // Creating pagination filter
-            var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
-
-            // Getting paged images
-            var pagedData = _context.Images
-                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
-                .Take(validFilter.PageSize)
-                .ToList();
-
-            var totalRecords = _context.Images.Count(); // Total record count
-
-            // Creating better return type: ImageGto
-            var data = new List<ImageDto>();
-
-            foreach (var image in pagedData)
+            try
             {
+                var route = Request.Path.Value;
 
-                var i = new ImageDto
+                // Creating pagination filter
+                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+
+                // Getting paged images
+                var pagedData = _context.Images
+                    .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                    .Take(validFilter.PageSize)
+                    .ToList();
+
+                var totalRecords = _context.Images.Count(); // Total record count
+
+                // Creating better return type: ImageGto
+                var data = new List<ImageDto>();
+
+                foreach (var image in pagedData)
                 {
-                    ImageId = image.Id,
-                    UserId = image.UserID,
-                    ImageFile = image.ImageFile,
-                    ImageTitle = image.ImageFile,
-                };
+                    var i = new ImageDto
+                    {
+                        ImageId = image.Id,
+                        UserId = image.UserID,
+                        ImageFile = image.ImageFile,
+                        ImageTitle = image.ImageFile,
+                    };
 
-                data.Add(i);
+                    data.Add(i);
+                }
+
+                var pagedResponse = PaginationHelper.CreatePagedReponse<ImageDto>(data, validFilter, totalRecords, _uriService, route);
+
+                return Ok(pagedResponse);
             }
-
-            var pagedResponse = PaginationHelper.CreatePagedReponse<ImageDto>(data, validFilter, totalRecords, _uriService, route);
-
-            return Ok(pagedResponse);
+            catch (Exception ex)
+            {
+                return BadRequest(new Response<string>()
+                {
+                    Message = "Oops! Something is not right...",
+                    Succeeded = false,
+                    Errors = new[] { ex.Message }
+                });
+            }
         }
 
         // Get all images
         [HttpGet("/image/all")]
         public ActionResult GetImages()
         {
-            List<Image> images = _context.Images.ToList(); // Getting all images
-
-            // Converting Images of better return type: ImageDto
-            List<ImageDto> data = new List<ImageDto>();
-
-            foreach (var image in images)
+            try
             {
+                List<Image> images = _context.Images.ToList(); // Getting all images
 
-                var i = new ImageDto
+                // Converting Images of better return type: ImageDto
+                List<ImageDto> data = new List<ImageDto>();
+
+                foreach (var image in images)
                 {
-                    ImageId = image.Id,
-                    UserId = image.UserID,
-                    ImageFile = image.ImageFile,
-                    ImageTitle = image.ImageFile,
-                };
 
-                data.Add(i);
+                    var i = new ImageDto
+                    {
+                        ImageId = image.Id,
+                        UserId = image.UserID,
+                        ImageFile = image.ImageFile,
+                        ImageTitle = image.ImageFile,
+                    };
+
+                    data.Add(i);
+                }
+                return Ok(new Response<List<ImageDto>>()
+                {
+                    Succeeded = true,
+                    Data = data
+                });
             }
-            return Ok(new Response<List<ImageDto>>() 
-            { 
-                Succeeded = true,
-                Data = data
-            });
+            catch (Exception ex)
+            {
+                return BadRequest(new Response<string>()
+                {
+                    Message = "Oops! Something is not right...",
+                    Succeeded = false,
+                    Errors = new[] { ex.Message }
+                });
+            }
         }
 
         // Adding an image
         [HttpPost]
-        public async Task<ActionResult> AddImage([FromBody]Image image)
+        public async Task<ActionResult> AddImage([FromBody] Image image)
         {
-            Image imageToSave = new Image();
-
             if (ModelState.IsValid)
             {
                 // Parsing the image content into extension and content
@@ -128,20 +147,11 @@ namespace SOAImageGalleryAPI.Controllers
                 // Converting from base64 to bytes
                 Byte[] bytes = Convert.FromBase64String(imageContent[1]);
 
+                MemoryStream stream = new MemoryStream(bytes);
+
                 // Creating the file path
                 string filePath = _env.ContentRootPath + @$"\{Guid.NewGuid()}.{imageContent[0]}";
 
-                // Saving the file locally
-                try
-                {
-                    System.IO.File.WriteAllBytes(filePath, bytes);
-                }
-                catch(Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    throw;
-                }
-                
                 // Parsing the file name from the file path
                 string fileName = filePath.Split("\\")[filePath.Split("\\").Length - 1];
 
@@ -155,19 +165,19 @@ namespace SOAImageGalleryAPI.Controllers
                 // Saving image data to the database
                 try
                 {
-                    await _minio.PutObjectAsync("images", fileName, filePath);
+                    await _minio.PutObjectAsync("images", fileName, stream, stream.Length);
                     _context.Images.Add(image);
                     _context.SaveChanges();
                 }
                 catch (Exception ex)
                 {
-                    System.IO.File.Delete(filePath);
-                    Console.WriteLine(ex.Message);
-                    throw;
+                    return BadRequest(new Response<string>()
+                    {
+                        Message = "Oops! Something is not right...",
+                        Succeeded = false,
+                        Errors = new[] { ex.Message }
+                    });
                 }
-                
-                // Deleting the image from the local directory
-                System.IO.File.Delete(filePath);
 
                 return Ok(new Response<Image>(image)
                 {
@@ -220,7 +230,7 @@ namespace SOAImageGalleryAPI.Controllers
                     var comment = new CommentDto
                     {
                         CommentId = c.CommentId,
-                        User = new UserDto { 
+                        User = new UserDto {
                             UserId = user.Id,
                             UserName = user.UserName
                         },
@@ -235,12 +245,13 @@ namespace SOAImageGalleryAPI.Controllers
                     Succeeded = true
                 });
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(new Response<CommentDto>()
+                return BadRequest(new Response<string>()
                 {
+                    Message = "Oops! Something is not right...",
                     Succeeded = false,
-                    Errors = new[] { e.Message }
+                    Errors = new[] { ex.Message }
                 });
             }
         }
@@ -253,8 +264,8 @@ namespace SOAImageGalleryAPI.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(new Response<ImageDto>() 
-                    { 
+                    return BadRequest(new Response<ImageDto>()
+                    {
                         Data = image,
                         Message = "Check the request body",
                         Succeeded = false,
@@ -304,6 +315,7 @@ namespace SOAImageGalleryAPI.Controllers
             {
                 return BadRequest(new Response<string>()
                 {
+                    Message = "Oops! Something is not right...",
                     Succeeded = false,
                     Errors = new[] { ex.Message }
                 });
@@ -336,8 +348,12 @@ namespace SOAImageGalleryAPI.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                throw;
+                return BadRequest(new Response<string>()
+                {
+                    Message = "Oops! Something is not right...",
+                    Succeeded = false,
+                    Errors = new[] { ex.Message }
+                });
             }
 
             return Ok(new Response<string>($"Image {imageFile} is deleted succesfully"));
@@ -356,7 +372,7 @@ namespace SOAImageGalleryAPI.Controllers
                     .GroupBy(x => x.ImageID)
                     .Select(x => new { ImageID = x.Key, VoteSum = x.Sum(a => a.Voted) })
                     .OrderByDescending(x => x.VoteSum)
-                    .Select(x => new ImageDto { 
+                    .Select(x => new ImageDto {
                         ImageId = x.ImageID,
                         VoteSum = x.VoteSum
                     })
@@ -378,7 +394,7 @@ namespace SOAImageGalleryAPI.Controllers
                 }
 
                 return Ok(new Response<List<ImageDto>>()
-                { 
+                {
                     Data = data,
                     Succeeded = true
                 });
@@ -387,7 +403,8 @@ namespace SOAImageGalleryAPI.Controllers
             {
                 return BadRequest(new Response<string>()
                 {
-                    Message = "Oops! Somehting is not right...",
+                    Message = "Oops! Something is not right...",
+                    Succeeded = false,
                     Errors = new[] { ex.Message }
                 });
             }
@@ -428,7 +445,7 @@ namespace SOAImageGalleryAPI.Controllers
             {
                 return BadRequest(new Response<string>()
                 {
-                    Message = "Oops! Somehting is not right...",
+                    Message = "Oops! Something is not right...",
                     Errors = new[] { ex.Message }
                 });
                 throw;
@@ -490,14 +507,14 @@ namespace SOAImageGalleryAPI.Controllers
                 return Ok(new Response<string>()
                 {
                     Message = "Image has been added to the favorites succesfully",
-                    Succeeded = false
+                    Succeeded = true
                 });
             }
             catch (Exception ex)
             {
                 return BadRequest(new Response<string>()
                 {
-                    Message = "Oops! Somehting is not right...",
+                    Message = "Oops! Something is not right...",
                     Errors = new[] { ex.Message }
                 });
                 throw;
@@ -514,3 +531,4 @@ namespace SOAImageGalleryAPI.Controllers
         }
     }
 }
+
