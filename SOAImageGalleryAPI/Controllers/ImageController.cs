@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SOAImageGalleryAPI.Models.Dto;
+using System.IO;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -139,8 +140,6 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpPost]
         public async Task<ActionResult> AddImage([FromBody]Image image)
         {
-            Image imageToSave = new Image();
-
             if (ModelState.IsValid)
             {
                 // Parsing the image content into extension and content
@@ -149,20 +148,11 @@ namespace SOAImageGalleryAPI.Controllers
                 // Converting from base64 to bytes
                 Byte[] bytes = Convert.FromBase64String(imageContent[1]);
 
+                MemoryStream stream = new MemoryStream(bytes);
+
                 // Creating the file path
                 string filePath = _env.ContentRootPath + @$"\{Guid.NewGuid()}.{imageContent[0]}";
 
-                // Saving the file locally
-                try
-                {
-                    System.IO.File.WriteAllBytes(filePath, bytes);
-                }
-                catch(Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    throw;
-                }
-                
                 // Parsing the file name from the file path
                 string fileName = filePath.Split("\\")[filePath.Split("\\").Length - 1];
 
@@ -176,13 +166,12 @@ namespace SOAImageGalleryAPI.Controllers
                 // Saving image data to the database
                 try
                 {
-                    await _minio.PutObjectAsync("images", fileName, filePath);
+                    await _minio.PutObjectAsync("images", fileName, stream, stream.Length);
                     _context.Images.Add(image);
                     _context.SaveChanges();
                 }
                 catch (Exception ex)
                 {
-                    System.IO.File.Delete(filePath);
                     return BadRequest(new Response<string>()
                     {
                         Message = "Oops! Something is not right...",
@@ -190,9 +179,6 @@ namespace SOAImageGalleryAPI.Controllers
                         Errors = new[] { ex.Message }
                     });
                 }
-                
-                // Deleting the image from the local directory
-                System.IO.File.Delete(filePath);
 
                 return Ok(new Response<Image>(image)
                 {
