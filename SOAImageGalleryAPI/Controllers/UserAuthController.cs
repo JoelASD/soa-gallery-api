@@ -18,6 +18,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace SOAImageGalleryAPI.Controllers
@@ -186,6 +187,7 @@ namespace SOAImageGalleryAPI.Controllers
                 });
         }
 
+        
         [Route("/signin-callback")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> GoogleCallback(string returnUrl)
