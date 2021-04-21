@@ -179,7 +179,7 @@ namespace SOAImageGalleryAPI.Controllers
                     });
                 }
 
-                return Ok(new Response<Image>(image)
+                return CreatedAtAction(nameof(AddImage), new Response<Image>(image)
                 {
                     Message = "Image has been added succesfully",
                     Succeeded = true
