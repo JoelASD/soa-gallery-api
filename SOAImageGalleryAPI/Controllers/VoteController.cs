@@ -28,6 +28,15 @@ namespace SOAImageGalleryAPI.Controllers
         public IActionResult Vote([FromHeader] string Authorization, [FromBody] VoteDto
             vote, string id)
         {
+            if (!TokenDecoder.Validate(Authorization, _context))
+            {
+                return Unauthorized(new Response<string>()
+                {
+                    Message = "Please login again!",
+                    Errors = new[] { "Unauthorized, token not valid!" }
+                });
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(new Response<CommentDto>()

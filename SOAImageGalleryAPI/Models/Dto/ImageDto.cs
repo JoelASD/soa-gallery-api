@@ -12,6 +12,7 @@ namespace SOAImageGalleryAPI.Models.Dto
         public UserDto User { get; set; }
         public string ImageFile { get; set; }
         public string ImageTitle { get; set; }
+        public bool IsPublic { get; set; }
         public int VoteSum { get; set; }
         public ICollection<CommentDto> Comments { get; set; }
     }
