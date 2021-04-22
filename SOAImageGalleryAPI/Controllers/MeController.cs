@@ -47,6 +47,15 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpGet("/me/comments")]
         public IActionResult MyComments([FromHeader] string Authorization)
         {
+            if (!TokenDecoder.Validate(Authorization, _context))
+            {
+                return Unauthorized(new Response<string>()
+                {
+                    Message = "Please login again!",
+                    Errors = new[] { "Unauthorized, token not valid!" }
+                });
+            }
+
             try
             {
                 string uid = TokenDecoder.Decode(Authorization);
@@ -95,6 +104,15 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpGet("/me/favorites")]
         public IActionResult MyFavorites([FromHeader] string Authorization)
         {
+            if (!TokenDecoder.Validate(Authorization, _context))
+            {
+                return Unauthorized(new Response<string>()
+                {
+                    Message = "Please login again!",
+                    Errors = new[] { "Unauthorized, token not valid!" }
+                });
+            }
+
             try
             {
                 string uid = TokenDecoder.Decode(Authorization);
@@ -112,6 +130,7 @@ namespace SOAImageGalleryAPI.Controllers
                         ImageId = i.Id,
                         ImageTitle = i.ImageTitle,
                         ImageFile = i.ImageFile,
+                        IsPublic = i.IsPublic,
                         User = new UserDto
                         {
                             UserId = u.Id,
@@ -142,6 +161,15 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpGet("/me/favorites/export")]
         public async Task<IActionResult> ExportFavorites([FromHeader] string Authorization)
         {
+            if (!TokenDecoder.Validate(Authorization, _context))
+            {
+                return Unauthorized(new Response<string>()
+                {
+                    Message = "Please login again!",
+                    Errors = new[] { "Unauthorized, token not valid!" }
+                });
+            }
+
             try
             {
                 string uid = TokenDecoder.Decode(Authorization);
@@ -154,27 +182,25 @@ namespace SOAImageGalleryAPI.Controllers
                 {
                     Image img = _context.Images.FirstOrDefault(i => i.Id == image.ImageID);
 
-                    // Checks if image exists and throws exception on case not.
+                    // Checks if image exists and throws exception in case not.
                     await _minio.StatObjectAsync("images", img.ImageFile);
 
-                    await _minio.GetObjectAsync("images", img.ImageFile, img.ImageFile);
+                    MemoryStream ms = new();
 
-                    MemoryStream stream = new MemoryStream(System.IO.File.ReadAllBytes(img.ImageFile));
+                    await _minio.GetObjectAsync("images", img.ImageFile,
+                        (stream) =>
+                        {
+                            stream.CopyTo(ms);
+                        });
 
-                    imgList.Add(new ZipItem(filename: img.ImageFile, content: stream));
+                    ms.Position = 0;
 
-                    string filePath = _env.ContentRootPath + @$"\{img.ImageFile}";
-
-                    if (System.IO.File.Exists(filePath)) 
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-                        
+                    imgList.Add(new ZipItem(filename: img.ImageFile, content: ms));
                 }
 
                 var zipStream = Zipper.Zip(imgList);
 
-                return File(zipStream, "application/octet-stream");
+                return File(zipStream, "application/octet-stream", fileDownloadName: "favorites.zip");
 
             }
             catch (Exception e)

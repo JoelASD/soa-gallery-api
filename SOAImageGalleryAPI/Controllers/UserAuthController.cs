@@ -146,32 +146,28 @@ namespace SOAImageGalleryAPI.Controllers
             {
                 AuthenticationHeaderValue.TryParse(Authorization, out var headerValue);
 
-                var t = new JwtSecurityToken(headerValue.Parameter);
-                string expDate = t.Claims.First(c => c.Type == "exp").Value;
+                var expiration = TokenDecoder.DecodeExpTime(Authorization);
 
-                var ed = Int32.Parse(expDate);
-
-                //DateTime date = DateTime.ParseExact(expDate);
-
-                DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-
-                dateTime = dateTime.AddSeconds(ed);
-
-                JwtBlacklist token = new JwtBlacklist()
+                if (expiration != null) 
                 {
-                    Token = headerValue.Parameter,
-                    Created = DateTime.Now,
-                    Expires = dateTime
-                };
+                    JwtBlacklist token = new JwtBlacklist()
+                    {
+                        Token = headerValue.Parameter,
+                        Created = DateTime.Now,
+                        Expires = (DateTime)expiration
+                    };
 
-                // fix needed
-                _context.Blacklist.Add(token);
-                _context.SaveChanges();
+                    _context.Blacklist.Add(token);
+                    _context.SaveChanges();
 
-                return Ok(new Response<DateTime>() { Data = dateTime, Succeeded = true });
+                    return Ok(new Response<JwtBlacklist>() { Data = token, Succeeded = true });
+                }
+
+                return BadRequest(new Response<DateTime>() { Succeeded = false, Message = "Expiration was not found" });
+
             }
 
-            return BadRequest(new Response<DateTime>() { Succeeded = false, Message = "vittu" });
+            return BadRequest(new Response<DateTime>() { Succeeded = false, Message = "User has already logged out" });
         }
 
         [Route("/google")]

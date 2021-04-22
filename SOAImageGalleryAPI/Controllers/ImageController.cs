@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SOAImageGalleryAPI.Models.Dto;
 using System.IO;
+using Microsoft.EntityFrameworkCore;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -57,6 +58,8 @@ namespace SOAImageGalleryAPI.Controllers
 
                 // Getting paged images
                 var pagedData = _context.Images
+                    .Include(i => i.Votes)
+                    .Where(i => i.IsPublic == true)
                     .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                     .Take(validFilter.PageSize)
                     .ToList();
@@ -73,7 +76,8 @@ namespace SOAImageGalleryAPI.Controllers
                         ImageId = image.Id,
                         UserId = image.UserID,
                         ImageFile = image.ImageFile,
-                        ImageTitle = image.ImageFile,
+                        ImageTitle = image.ImageTitle,
+                        VoteSum = image.Votes.Count
                     };
 
                     data.Add(i);
@@ -114,6 +118,7 @@ namespace SOAImageGalleryAPI.Controllers
                         UserId = image.UserID,
                         ImageFile = image.ImageFile,
                         ImageTitle = image.ImageFile,
+                        IsPublic = image.IsPublic
                     };
 
                     data.Add(i);
@@ -137,8 +142,17 @@ namespace SOAImageGalleryAPI.Controllers
 
         // Adding an image
         [HttpPost]
-        public async Task<ActionResult> AddImage([FromBody] Image image)
+        public async Task<ActionResult> AddImage([FromHeader] string Authorization, [FromBody] Image image)
         {
+            if (!TokenDecoder.Validate(Authorization, _context)) 
+            {
+                return Unauthorized(new Response<string>()
+                {
+                    Message = "Please login again!",
+                    Errors = new[] { "Unauthorized, token not valid!" }
+                });
+            }
+
             if (ModelState.IsValid)
             {
                 // Parsing the image content into extension and content
@@ -260,6 +274,15 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpPut]
         public IActionResult EditImage([FromHeader] string Authorization, [FromBody] ImageDto image)
         {
+            if (!TokenDecoder.Validate(Authorization, _context))
+            {
+                return Unauthorized(new Response<string>()
+                {
+                    Message = "Please login again!",
+                    Errors = new[] { "Unauthorized, token not valid!" }
+                });
+            }
+
             try
             {
                 if (!ModelState.IsValid)
@@ -297,6 +320,7 @@ namespace SOAImageGalleryAPI.Controllers
 
 
                 imageToEdit.ImageTitle = image.ImageTitle;
+                imageToEdit.IsPublic = image.IsPublic;
                 imageToEdit.Updated = DateTime.Now;
                 _context.Images.Update(imageToEdit);
                 _context.SaveChanges();
@@ -326,6 +350,15 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpDelete("{file_name}")]
         public async Task<IActionResult> DeleteImage(string file_name, [FromHeader] string Authorization)
         {
+            if (!TokenDecoder.Validate(Authorization, _context))
+            {
+                return Unauthorized(new Response<string>()
+                {
+                    Message = "Please login again!",
+                    Errors = new[] { "Unauthorized, token not valid!" }
+                });
+            }
+
             string imageFile = "";
             try
             {
@@ -355,7 +388,7 @@ namespace SOAImageGalleryAPI.Controllers
                     Errors = new[] { ex.Message }
                 });
             }
-
+            // fix response
             return Ok(new Response<string>($"Image {imageFile} is deleted succesfully"));
         }
 
@@ -412,12 +445,23 @@ namespace SOAImageGalleryAPI.Controllers
 
         // Getting all the images of the specific user
         [AllowAnonymous]
-        [HttpGet("/image/{user_id}")]
-        public IActionResult GetUserImages(string user_id)
+        [HttpGet("/user/{user_id}/images")]
+        public IActionResult GetUserImages([FromHeader] string Authorization, string user_id)
         {
             try
             {
-                List<Image> images = _context.Images.Where(i => i.UserID == user_id).ToList();
+                //List<Image> images = _context.Images.Where(i => i.UserID == user_id).ToList();
+                List<Image> images = new List<Image>();
+                
+                if (user_id == TokenDecoder.Decode(Authorization) && TokenDecoder.Validate(Authorization, _context))
+                {
+                    images = _context.Images.Where(i => i.UserID == user_id).ToList();
+                }
+                else
+                {
+                    images = _context.Images.Where(i => i.UserID == user_id && i.IsPublic == true).ToList();
+                }
+
                 List<ImageDto> data = new List<ImageDto>();
 
                 foreach (var image in images)
@@ -428,7 +472,8 @@ namespace SOAImageGalleryAPI.Controllers
                         ImageId = image.Id,
                         UserId = image.UserID,
                         ImageFile = image.ImageFile,
-                        ImageTitle = image.ImageFile,
+                        ImageTitle = image.ImageTitle,
+                        IsPublic = image.IsPublic
                     };
 
                     data.Add(i);
@@ -452,21 +497,21 @@ namespace SOAImageGalleryAPI.Controllers
             }
         }
 
+        //add image to your favorites
         [HttpPut("{image_id}/favorite")]
         public IActionResult AddImageToFavorites([FromHeader] string Authorization, string image_id)
         {
+            if (!TokenDecoder.Validate(Authorization, _context))
+            {
+                return Unauthorized(new Response<string>()
+                {
+                    Message = "Please login again!",
+                    Errors = new[] { "Unauthorized, token not valid!" }
+                });
+            }
+
             try
             {
-                // Checking if user is logged in
-                if (TokenDecoder.Decode(Authorization) == null)
-                {
-                    return Unauthorized(new Response<string>()
-                    {
-                        Message = "You are not authorized, login first!",
-                        Succeeded = false
-                    });
-                }
-
                 // Checking if image is already in favorites, if so it will be removed from favorites
                 UserHasFavourite favoriteImage = _context.Favorites.FirstOrDefault(f => f.UserID == TokenDecoder.Decode(Authorization) && f.ImageID == image_id);
                 if (favoriteImage != null)
@@ -480,13 +525,13 @@ namespace SOAImageGalleryAPI.Controllers
                     });
                 }
 
-                // CHecking if image exists
+                // CHecking if image exists and is available (not someone elses private image)
                 Image image = _context.Images.FirstOrDefault(i => i.Id == image_id);
-                if (image == null)
+                if (image == null || image.UserID != TokenDecoder.Decode(Authorization) && image.IsPublic == false)
                 {
                     return NotFound(new Response<string>()
                     {
-                        Message = $"Image with ID: {image_id} does not exist",
+                        Message = $"Image with ID: {image_id} does not exist or is private",
                         Succeeded = false
                     });
                 }

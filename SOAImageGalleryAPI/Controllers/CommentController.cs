@@ -30,9 +30,28 @@ namespace SOAImageGalleryAPI.Controllers
 
         // Add comment to image
         [HttpPost("/image/{id}/comment")]
-        public async Task<IActionResult> AddComment([FromHeader] string Authorization, [FromBody] CommentDto comment, string id)
+        public IActionResult AddComment([FromHeader] string Authorization, [FromBody] CommentDto comment, string id)
         {
-            if(ModelState.IsValid)
+            if (!TokenDecoder.Validate(Authorization, _context))
+            {
+                return Unauthorized(new Response<string>()
+                {
+                    Message = "Please login again!",
+                    Errors = new[] { "Unauthorized, token not valid!" }
+                });
+            }
+
+            // check make sure users cant comment others private images
+            var img = _context.Images.FirstOrDefault(i => i.Id == id);
+            if (img.UserID != TokenDecoder.Decode(Authorization) && img.IsPublic == false)
+            {
+                return Unauthorized(new Response<string>()
+                {
+                    Message = "Cant access image",
+                });
+            }
+
+            if (ModelState.IsValid)
             {
                 
                 try
@@ -91,6 +110,15 @@ namespace SOAImageGalleryAPI.Controllers
         public IActionResult EditComment([FromHeader] string Authorization, [FromBody] CommentDto
             comment, string id)
         {
+            if (!TokenDecoder.Validate(Authorization, _context))
+            {
+                return Unauthorized(new Response<string>()
+                {
+                    Message = "Please login again!",
+                    Errors = new[] { "Unauthorized, token not valid!" }
+                });
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(new Response<CommentDto>()
@@ -160,6 +188,14 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpDelete("/comment/{id}")]
         public IActionResult DeleteComment([FromHeader] string Authorization, string id)
         {
+            if (!TokenDecoder.Validate(Authorization, _context))
+            {
+                return Unauthorized(new Response<string>()
+                {
+                    Message = "Please login again!",
+                    Errors = new[] { "Unauthorized, token not valid!" }
+                });
+            }
 
             var existingComment = _context.Comments.FirstOrDefault(i => i.CommentId == id);
 
