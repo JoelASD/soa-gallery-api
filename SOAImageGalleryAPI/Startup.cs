@@ -52,10 +52,11 @@ namespace SOAImageGalleryAPI
                 services.AddDbContext<DataContext>(p => p.UseNpgsql(Configuration["PostgreSqlConnectionString"]));
             } else if (CurrentEnvironment.IsProduction())
             {
-                services.AddDbContext<DataContext>(p => p.UseNpgsql(Environment.GetEnvironmentVariable("IMAGE_GALLERY_POSTGRESQL_CONNECTION_STRING")));
-            } else
+                services.AddDbContext<DataContext>(p => p.UseNpgsql($"Server={Environment.GetEnvironmentVariable("PG_SERVER")}; port={Environment.GetEnvironmentVariable("PG_PORT")}; user id={Environment.GetEnvironmentVariable("PG_USER")}; password={Environment.GetEnvironmentVariable("PG_PASSWORD")}; database={Environment.GetEnvironmentVariable("PG_DB")};"));
+            }
+            else
             {
-                services.AddDbContext<DataContext>(p => p.UseNpgsql(Environment.GetEnvironmentVariable("IMAGE_GALLERY_POSTGRESQL_CONNECTION_STRING")));
+                services.AddDbContext<DataContext>(p => p.UseNpgsql($"Server={Environment.GetEnvironmentVariable("PG_SERVER")}; port={Environment.GetEnvironmentVariable("PG_PORT")}; user id={Environment.GetEnvironmentVariable("PG_USER")}; password={Environment.GetEnvironmentVariable("PG_PASSWORD")}; database={Environment.GetEnvironmentVariable("PG_DB")};"));
             }
 
             services.AddDbContext<DataContext>(p => p.UseNpgsql(Configuration["PostgreSqlConnectionString"]));
