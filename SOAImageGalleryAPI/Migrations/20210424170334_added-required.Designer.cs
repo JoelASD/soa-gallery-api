@@ -3,15 +3,17 @@ using System;
 using ConsoleApp.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace SOAImageGalleryAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20210424170334_added-required")]
+    partial class addedrequired
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -242,7 +244,6 @@ namespace SOAImageGalleryAPI.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("UserID")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("CommentId");
@@ -275,7 +276,6 @@ namespace SOAImageGalleryAPI.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("UserID")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -310,14 +310,12 @@ namespace SOAImageGalleryAPI.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("ImageID")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Updated")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("UserID")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("FavouriteID");
@@ -345,7 +343,6 @@ namespace SOAImageGalleryAPI.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("UserID")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Voted")
@@ -434,9 +431,7 @@ namespace SOAImageGalleryAPI.Migrations
 
                     b.HasOne("SOAImageGalleryAPI.Models.User", "User")
                         .WithMany("Comments")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserID");
 
                     b.Navigation("Image");
 
@@ -447,9 +442,7 @@ namespace SOAImageGalleryAPI.Migrations
                 {
                     b.HasOne("SOAImageGalleryAPI.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserID");
 
                     b.Navigation("User");
                 });
@@ -458,15 +451,11 @@ namespace SOAImageGalleryAPI.Migrations
                 {
                     b.HasOne("SOAImageGalleryAPI.Models.Image", "Image")
                         .WithMany("Favourites")
-                        .HasForeignKey("ImageID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ImageID");
 
                     b.HasOne("SOAImageGalleryAPI.Models.User", "User")
                         .WithMany("Favourites")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserID");
 
                     b.Navigation("Image");
 
@@ -483,9 +472,7 @@ namespace SOAImageGalleryAPI.Migrations
 
                     b.HasOne("SOAImageGalleryAPI.Models.User", "User")
                         .WithMany("Votes")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserID");
 
                     b.Navigation("Image");
 

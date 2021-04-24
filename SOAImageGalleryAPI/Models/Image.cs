@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -10,6 +11,7 @@ namespace SOAImageGalleryAPI.Models
         public string Id { get; set; }
         public string ImageFile { get; set; }
         public string ImageTitle { get; set; }
+        [Required]
         public string UserID { get; set; }
         public bool IsPublic { get; set; }
         public User User { get; set; }

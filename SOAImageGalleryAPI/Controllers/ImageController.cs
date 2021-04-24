@@ -380,15 +380,21 @@ namespace SOAImageGalleryAPI.Controllers
                     return BadRequest(new Response<string>(error: "Authorization error"));
                 }
 
-                var commentsToDelete = _context.Comments.Where(c => c.ImageID == id);
-                var favoritesToDelete = _context.Favorites.Where(f => f.ImageID == id);
-                var votesToDelete = _context.Votes.Where(v => v.ImageID == id);
+                _context.Entry(img).Collection(i => i.Comments).Load();
+                _context.Entry(img).Collection(i => i.Votes).Load();
+                _context.Entry(img).Collection(i => i.Favourites).Load();
+
+
+
+                //var commentsToDelete = _context.Comments.Where(c => c.ImageID == id);
+                //var favoritesToDelete = _context.Favorites.Where(f => f.ImageID == id);
+                //var votesToDelete = _context.Votes.Where(v => v.ImageID == id);
 
                 imageFile = img.ImageFile;
                 await _minio.RemoveObjectAsync("images", imageFile);
-                _context.Comments.RemoveRange(commentsToDelete);
-                _context.Favorites.RemoveRange(favoritesToDelete);
-                _context.Votes.RemoveRange(votesToDelete);
+                //_context.Comments.RemoveRange(commentsToDelete);
+                //_context.Favorites.RemoveRange(favoritesToDelete);
+                //_context.Votes.RemoveRange(votesToDelete);
                 _context.Images.Remove(img);
                 _context.SaveChanges();
             }
