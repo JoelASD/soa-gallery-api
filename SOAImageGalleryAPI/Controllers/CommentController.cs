@@ -43,7 +43,7 @@ namespace SOAImageGalleryAPI.Controllers
 
             // check make sure users cant comment others private images
             var img = _context.Images.FirstOrDefault(i => i.Id == id);
-            if (img.UserID != TokenDecoder.Decode(Authorization) && img.IsPublic == false)
+            if (img.UserID != TokenDecoder.DecodeUid(Authorization) && img.IsPublic == false)
             {
                 return Unauthorized(new Response<string>()
                 {
@@ -60,7 +60,7 @@ namespace SOAImageGalleryAPI.Controllers
                     {
                         CommentId = Guid.NewGuid().ToString(),
                         CommentText = comment.CommentText,
-                        UserID = TokenDecoder.Decode(Authorization),
+                        UserID = TokenDecoder.DecodeUid(Authorization),
                         ImageID = id,
                         Created = DateTime.Now,
                         Updated = DateTime.Now
@@ -142,7 +142,7 @@ namespace SOAImageGalleryAPI.Controllers
                 });
             }
 
-            if (existingComment.UserID != TokenDecoder.Decode(Authorization))
+            if (existingComment.UserID != TokenDecoder.DecodeUid(Authorization))
             {
                 return BadRequest(new Response<CommentDto>()
                 {
@@ -209,7 +209,7 @@ namespace SOAImageGalleryAPI.Controllers
                 });
             }
 
-            if (existingComment.UserID != TokenDecoder.Decode(Authorization))
+            if (existingComment.UserID != TokenDecoder.DecodeUid(Authorization))
             {
                 return BadRequest(new Response<string>()
                 {
