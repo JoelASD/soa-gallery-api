@@ -239,12 +239,5 @@ namespace SOAImageGalleryAPI.Controllers
             }
         }
 
-        // Get all comments (delete later)
-        [HttpGet("/comment/all")]
-        public ActionResult GetComments()
-        {
-            return Ok(new Response<List<Comment>>(_context.Comments.ToList()));
-        }
-
     }
 }
