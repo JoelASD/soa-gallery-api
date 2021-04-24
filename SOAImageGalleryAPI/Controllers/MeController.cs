@@ -17,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -58,7 +59,7 @@ namespace SOAImageGalleryAPI.Controllers
 
             try
             {
-                string uid = TokenDecoder.Decode(Authorization);
+                string uid = TokenDecoder.DecodeUid(Authorization);
 
                 var myComments = _context.Comments.Where(c => c.UserID == uid).ToList();
                 var myUser = _context.Users.FirstOrDefault(u => u.Id == uid);
@@ -115,16 +116,21 @@ namespace SOAImageGalleryAPI.Controllers
 
             try
             {
-                string uid = TokenDecoder.Decode(Authorization);
+                string uid = TokenDecoder.DecodeUid(Authorization);
 
-                var favoriteImages = _context.Favorites.Where(f => f.UserID == uid).ToList();
+                var favoriteImages = _context.Favorites
+                    .Where(f => f.UserID == uid)
+                    .ToList();
 
                 List<ImageDto> data = new List<ImageDto>();
 
                 foreach (var favorite in favoriteImages)
                 {
                     Image i = _context.Images.FirstOrDefault(i => i.Id == favorite.ImageID);
+                    _context.Entry(i).Collection(i => i.Votes).Load();
+
                     User u = _context.Users.FirstOrDefault(u => u.Id == i.UserID);
+
                     data.Add(new ImageDto
                     {
                         ImageId = i.Id,
@@ -135,8 +141,9 @@ namespace SOAImageGalleryAPI.Controllers
                         {
                             UserId = u.Id,
                             UserName = u.UserName
-                        }
-                    });
+                        },
+                        VoteSum = i.Votes.Sum(v => v.Voted)
+                });
                 }
 
                 return Ok(new Response<List<ImageDto>>()
@@ -172,7 +179,7 @@ namespace SOAImageGalleryAPI.Controllers
 
             try
             {
-                string uid = TokenDecoder.Decode(Authorization);
+                string uid = TokenDecoder.DecodeUid(Authorization);
 
                 var favorites = _context.Favorites.Where(f => f.UserID == uid).ToList();
 

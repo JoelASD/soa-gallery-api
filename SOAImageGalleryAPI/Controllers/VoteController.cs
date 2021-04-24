@@ -46,7 +46,7 @@ namespace SOAImageGalleryAPI.Controllers
                 });
             }
 
-            string uid = TokenDecoder.Decode(Authorization);
+            string uid = TokenDecoder.DecodeUid(Authorization);
             var existingVote = _context.Votes.FirstOrDefault(v => v.UserID == uid && v.ImageID == id);
 
             if (existingVote == null)

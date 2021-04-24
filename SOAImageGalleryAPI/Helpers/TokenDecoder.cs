@@ -10,7 +10,7 @@ namespace SOAImageGalleryAPI.Helpers
 {
     public static class TokenDecoder
     {
-        public static string Decode(string authorization)
+        public static string DecodeUid(string authorization)
         {
             try
             {

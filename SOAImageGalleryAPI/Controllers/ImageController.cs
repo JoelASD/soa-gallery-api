@@ -59,6 +59,7 @@ namespace SOAImageGalleryAPI.Controllers
                 // Getting paged images
                 var pagedData = _context.Images
                     .Include(i => i.Votes)
+                    .Include(i => i.User)
                     .Where(i => i.IsPublic == true)
                     .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                     .Take(validFilter.PageSize)
@@ -74,10 +75,14 @@ namespace SOAImageGalleryAPI.Controllers
                     var i = new ImageDto
                     {
                         ImageId = image.Id,
-                        UserId = image.UserID,
+                        User = new UserDto
+                        {
+                            UserId = image.User.Id,
+                            UserName = image.User.UserName
+                        },
                         ImageFile = image.ImageFile,
                         ImageTitle = image.ImageTitle,
-                        VoteSum = image.Votes.Count
+                        VoteSum = image.Votes.Sum(v => v.Voted)
                     };
 
                     data.Add(i);
@@ -308,7 +313,7 @@ namespace SOAImageGalleryAPI.Controllers
                     });
                 }
 
-                if (imageToEdit.UserID != TokenDecoder.Decode(Authorization))
+                if (imageToEdit.UserID != TokenDecoder.DecodeUid(Authorization))
                 {
                     return BadRequest(new Response<ImageDto>()
                     {
@@ -369,7 +374,7 @@ namespace SOAImageGalleryAPI.Controllers
                     return NotFound(new Response<string>(error: "The image does not exist"));
                 }
 
-                if (data.UserID != TokenDecoder.Decode(Authorization))
+                if (data.UserID != TokenDecoder.DecodeUid(Authorization))
                 {
                     return BadRequest(new Response<string>(error: "Authorization error"));
                 }
@@ -453,7 +458,7 @@ namespace SOAImageGalleryAPI.Controllers
                 //List<Image> images = _context.Images.Where(i => i.UserID == user_id).ToList();
                 List<Image> images = new List<Image>();
                 
-                if (user_id == TokenDecoder.Decode(Authorization) && TokenDecoder.Validate(Authorization, _context))
+                if (user_id == TokenDecoder.DecodeUid(Authorization) && TokenDecoder.Validate(Authorization, _context))
                 {
                     images = _context.Images.Where(i => i.UserID == user_id).ToList();
                 }
@@ -513,7 +518,7 @@ namespace SOAImageGalleryAPI.Controllers
             try
             {
                 // Checking if image is already in favorites, if so it will be removed from favorites
-                UserHasFavourite favoriteImage = _context.Favorites.FirstOrDefault(f => f.UserID == TokenDecoder.Decode(Authorization) && f.ImageID == image_id);
+                UserHasFavourite favoriteImage = _context.Favorites.FirstOrDefault(f => f.UserID == TokenDecoder.DecodeUid(Authorization) && f.ImageID == image_id);
                 if (favoriteImage != null)
                 {
                     _context.Favorites.Remove(favoriteImage);
@@ -527,7 +532,7 @@ namespace SOAImageGalleryAPI.Controllers
 
                 // CHecking if image exists and is available (not someone elses private image)
                 Image image = _context.Images.FirstOrDefault(i => i.Id == image_id);
-                if (image == null || image.UserID != TokenDecoder.Decode(Authorization) && image.IsPublic == false)
+                if (image == null || image.UserID != TokenDecoder.DecodeUid(Authorization) && image.IsPublic == false)
                 {
                     return NotFound(new Response<string>()
                     {
@@ -540,7 +545,7 @@ namespace SOAImageGalleryAPI.Controllers
                 UserHasFavourite uHF = new UserHasFavourite()
                 {
                     FavouriteID = Guid.NewGuid().ToString(),
-                    UserID = TokenDecoder.Decode(Authorization),
+                    UserID = TokenDecoder.DecodeUid(Authorization),
                     ImageID = image_id,
                     Created = DateTime.Now,
                     Updated = DateTime.Now
@@ -570,7 +575,7 @@ namespace SOAImageGalleryAPI.Controllers
         [HttpGet("/test")]
         public async Task<IActionResult> TestToken([FromHeader] string authorization, string file_name)
         {
-            string userId = TokenDecoder.Decode(authorization);
+            string userId = TokenDecoder.DecodeUid(authorization);
             Console.WriteLine("ID: " + userId);
             return Ok();
         }
