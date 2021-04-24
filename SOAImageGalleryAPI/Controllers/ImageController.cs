@@ -42,9 +42,6 @@ namespace SOAImageGalleryAPI.Controllers
                 EnvVars.GetEnvVar(_env.EnvironmentName, _config)[1],
                 EnvVars.GetEnvVar(_env.EnvironmentName, _config)[2]
                 );
-            Console.WriteLine(EnvVars.GetEnvVar(_env.EnvironmentName, _config)[0]);
-            Console.WriteLine(EnvVars.GetEnvVar(_env.EnvironmentName, _config)[1]);
-            Console.WriteLine(EnvVars.GetEnvVar(_env.EnvironmentName, _config)[2]);
         }
 
         // Getting paged images, max 10
