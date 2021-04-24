@@ -58,6 +58,7 @@ namespace SOAImageGalleryAPI.Controllers
 
                 // Getting paged images
                 var pagedData = _context.Images
+                    .OrderByDescending(i => i.Created)
                     .Include(i => i.Votes)
                     .Include(i => i.User)
                     .Where(i => i.IsPublic == true)
@@ -82,6 +83,7 @@ namespace SOAImageGalleryAPI.Controllers
                         },
                         ImageFile = image.ImageFile,
                         ImageTitle = image.ImageTitle,
+                        Craeted = image.Created,
                         VoteSum = image.Votes.Sum(v => v.Voted)
                     };
 

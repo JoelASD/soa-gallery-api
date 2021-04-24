@@ -1,12 +1,45 @@
 # SOA Gallery API
 
+**JAMK University of Applied Sciences**
+
+Creators:
+* Samson Azizyan
+* Joel Aalto
+
+
 Image Gallery API for the Service Oriented Applications Course in JAMK
+
+Swagger Docs: http://galleryapi.codesamson.com/swagger/index.html
+
+# Table of Contents
+- [SOA Gallery API](#soa-gallery-api)
+- [Table of Contents](#table-of-contents)
+- [API Endpoint Docs](#api-endpoint-docs)
+  - [Images](#images)
+    - [List images with pagination ordered by descending datetime](#list-images-with-pagination-ordered-by-descending-datetime)
+    - [List All Images (if admin)](#list-all-images-if-admin)
+    - [Add one image](#add-one-image)
+    - [Edit image](#edit-image)
+    - [Get one image](#get-one-image)
+    - [Delete image](#delete-image)
+    - [Edit top 5 upvoted images from last 24h (trending)](#edit-top-5-upvoted-images-from-last-24h-trending)
+    - [List all images of the specific user](#list-all-images-of-the-specific-user)
+    - [Add image to favorites or remove image from favorites](#add-image-to-favorites-or-remove-image-from-favorites)
+  - [Authentication](#authentication)
+    - [Authenticate using google account](#authenticate-using-google-account)
+    - [Register user](#register-user)
+    - [Login](#login)
+    - [Logout](#logout)
+- [Features to do in the future](#features-to-do-in-the-future)
+  - [Database Model](#database-model)
+    - [Version 1](#version-1)
+  - [Dotnet commands](#dotnet-commands)
 
 # API Endpoint Docs
 
 ## Images
 
-### List images with pagination
+### List images with pagination ordered by descending datetime
 
 **Method:** GET
 
@@ -420,50 +453,135 @@ http://localhost:5000/image/{image_id}/favorite/
 }
 ```
 
+## Authentication
+
+### Authenticate using google account
+
+This works locally / development, but on the CSC instance it returns an error. This is probably cause by the lack of the security group rule for the ingress from google server. We could not figure out the ip address that is used by Google for the authentication callbacks
+
+![Google Auth Error](images/google-error.JPG)
+
+**Route:** /google
+
+**Callback route:** /signin-callback
+
+**Example**
+
+http://localhost:5000/google/
+
+**Response**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6ImYxOGM5YjZhLTc3YjMtNGU5Mi1hYWFlLTc2ZGIyYjc1ZmUxZiIsImVtYWlsIjoiaW90LnR0djE4c0BnbWFpbC5jb20iLCJzdWIiOiJpb3QudHR2MThzQGdtYWlsLmNvbSIsImp0aSI6IjA4MWU1YjI1LTZlMzQtNDQ5Ny04MDNjLWM0YzVhNTUzMmRkYyIsIm5iZiI6MTYxOTI4ODMxOCwiZXhwIjoxNjE5Mzc0NzE4LCJpYXQiOjE2MTkyODgzMTh9.HyYEGyMvATaGY7dhyumuWDapCIeZuM7iXp6PXbNin_0",
+  "result": true,
+  "errors": null,
+  "id": null
+}
+```
+
+![Google Auth Error](images/google-auth.JPG)
+
+### Register user
+
+**Method:** POST
+
+**Route:** /register
+
+**Body:**
+
+```json
+{
+  "email": "user@example.com",
+  "userName": "string",
+  "password": "string length min: 8, 1 special char, one capital and 1 number"
+}
+```
+
+**Example**
+
+http://localhost:5000/register/
+
+**Response**
+```json
+{
+  "token": "{token}",
+  "result": true,
+  "errors": null,
+  "id": "{userID}"
+}
+```
+
+### Login
+
+**Method:** POST
+
+**Route:** /login
+
+**Body:**
+
+```json
+{
+  "email": "user@example.com",
+  "password": "string"
+}
+```
+
+**Example**
+
+http://localhost:5000/login/
+
+**Response**
+```json
+{
+  "token": "{token}",
+  "result": true,
+  "errors": null,
+  "id": null
+}
+```
+
+### Logout
+
+**Method:** POST
+
+**Route:** /logout
+
+**Headers:** Authorization: "Bearer {Token}"
+
+**Example**
+
+http://localhost:5000/logout/
+
+**Response**
+
+```json
+{
+    "data": {
+        "token": "{token}",
+        "created": "2021-04-24T18:31:01.1888423+00:00",
+        "expires": "2021-04-25T18:27:56+00:00"
+    },
+    "succeeded": true,
+    "errors": null,
+    "message": null
+}
+```
+
 <br/>
 <br/>
 <br/>
 <br/>
 
-* POST /image *
-* GET /image?limit=10&page=1 *
-* GET /image/trending *
-* DELETE /image/:image-id *
-* PUT /image/:image-id/vote *
-* PUT /image/:image-id/favorite*
-* POST /image/:image-id/comment *
-
-* PUT /comment/:comment-id *
-* DELETE /comment/:comment-id *
-
-* GET /user/:user-id/image *
-
-* GET /me/favorites *
-* GET /me/favorites/export *
-* GET /me/comments *
-
-* POST /auth/register *
-* POST /auth/login *
-* GET /auth/logout *
+# Features to do in the future
 
 * Logging to external server
-
 * Tests
-* Favorites as ZIP *
-* Google / Facebook login *
 * Admin / normal user / anonymous
-* Public / Private images *
 * Report this image feature
-
-* CI/CD *
-* docker-compose.yml with env variables *
-
-* Documentation
-
-* GET /ping *
 
 ## Database Model
 
+### Version 1
 ![Database](images/LogicalDbModel.png)
 
 ## Dotnet commands
@@ -473,7 +591,3 @@ http://localhost:5000/image/{image_id}/favorite/
 * Updating Database: ```dotnet-ef database update```
 * Starting the server: ```dotnet run``` runs on http://localhost:5001
 * Watching the server: ```dotnet run watch``` runs on http://localhost:5001
-
-## Google Auth
-* Client ID: 845287079380-rarn3p0kk316olvrq966ca2dkcs1ran1.apps.googleusercontent.com
-* Client Secret: 4scH6tm6pwtMgFYOLrQpECf6
