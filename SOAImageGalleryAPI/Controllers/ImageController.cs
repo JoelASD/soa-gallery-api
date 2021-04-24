@@ -145,7 +145,7 @@ namespace SOAImageGalleryAPI.Controllers
             }
         }
 
-        // Adding an image
+        // Adding an image // USER CAN POST PICTURES FOR OTHER USERS -- FIX
         [HttpPost]
         public async Task<ActionResult> AddImage([FromHeader] string Authorization, [FromBody] Image image)
         {
@@ -176,6 +176,7 @@ namespace SOAImageGalleryAPI.Controllers
 
                 // Adding nesessary properties to the image object 
                 image.Id = Guid.NewGuid().ToString();
+                image.UserID = TokenDecoder.DecodeUid(Authorization);
                 image.Created = DateTime.Now;
                 image.Updated = DateTime.Now;
                 image.ImageFile = fileName;
@@ -352,8 +353,8 @@ namespace SOAImageGalleryAPI.Controllers
         }
 
         // Deleting an image
-        [HttpDelete("{file_name}")]
-        public async Task<IActionResult> DeleteImage(string file_name, [FromHeader] string Authorization)
+        [HttpDelete("/image/{id}")]
+        public async Task<IActionResult> DeleteImage(string id, [FromHeader] string Authorization)
         {
             if (!TokenDecoder.Validate(Authorization, _context))
             {
@@ -367,21 +368,34 @@ namespace SOAImageGalleryAPI.Controllers
             string imageFile = "";
             try
             {
-                var data = _context.Images.FirstOrDefault(i => i.ImageFile == file_name);
+                var img = _context.Images.FirstOrDefault(i => i.Id == id);            
 
-                if (data == null)
+                if (img == null)
                 {
                     return NotFound(new Response<string>(error: "The image does not exist"));
                 }
 
-                if (data.UserID != TokenDecoder.DecodeUid(Authorization))
+                if (img.UserID != TokenDecoder.DecodeUid(Authorization))
                 {
                     return BadRequest(new Response<string>(error: "Authorization error"));
                 }
 
-                imageFile = data.ImageFile;
-                await _minio.RemoveObjectAsync("images", file_name);
-                _context.Images.Remove(data);
+                _context.Entry(img).Collection(i => i.Comments).Load();
+                _context.Entry(img).Collection(i => i.Votes).Load();
+                _context.Entry(img).Collection(i => i.Favourites).Load();
+
+
+
+                //var commentsToDelete = _context.Comments.Where(c => c.ImageID == id);
+                //var favoritesToDelete = _context.Favorites.Where(f => f.ImageID == id);
+                //var votesToDelete = _context.Votes.Where(v => v.ImageID == id);
+
+                imageFile = img.ImageFile;
+                await _minio.RemoveObjectAsync("images", imageFile);
+                //_context.Comments.RemoveRange(commentsToDelete);
+                //_context.Favorites.RemoveRange(favoritesToDelete);
+                //_context.Votes.RemoveRange(votesToDelete);
+                _context.Images.Remove(img);
                 _context.SaveChanges();
             }
             catch (Exception ex)
@@ -394,7 +408,11 @@ namespace SOAImageGalleryAPI.Controllers
                 });
             }
             // fix response
-            return Ok(new Response<string>($"Image {imageFile} is deleted succesfully"));
+            return Ok(new Response<string>() 
+            { 
+                Succeeded = true,
+                Message = $"Image {imageFile} was deleted with its votes and comments"
+            });
         }
 
         // Getting top 5 trending images within last 24h
@@ -455,7 +473,6 @@ namespace SOAImageGalleryAPI.Controllers
         {
             try
             {
-                //List<Image> images = _context.Images.Where(i => i.UserID == user_id).ToList();
                 List<Image> images = new List<Image>();
                 
                 if (user_id == TokenDecoder.DecodeUid(Authorization) && TokenDecoder.Validate(Authorization, _context))

@@ -10,8 +10,10 @@ namespace SOAImageGalleryAPI.Models
     {
         public string VoteId { get; set; }
         public int Voted { get; set; }
+        [Required]
         public string UserID { get; set; }
         public User User { get; set; }
+        [Required]
         public string ImageID { get; set; }
         public Image Image { get; set; }
         public DateTime Created { get; set; }
