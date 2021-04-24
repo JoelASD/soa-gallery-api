@@ -147,7 +147,7 @@ namespace SOAImageGalleryAPI.Controllers
 
         // Adding an image // USER CAN POST PICTURES FOR OTHER USERS -- FIX
         [HttpPost]
-        public async Task<ActionResult> AddImage([FromHeader] string Authorization, [FromBody] Image image)
+        public async Task<ActionResult> AddImage([FromHeader] string Authorization, [FromBody] ImageDto image)
         {
             if (!TokenDecoder.Validate(Authorization, _context)) 
             {
@@ -174,19 +174,23 @@ namespace SOAImageGalleryAPI.Controllers
                 // Parsing the file name from the file path
                 string fileName = filePath.Split("\\")[filePath.Split("\\").Length - 1];
 
+                Image imageToSave = new Image();
+
                 // Adding nesessary properties to the image object 
-                image.Id = Guid.NewGuid().ToString();
-                image.UserID = TokenDecoder.DecodeUid(Authorization);
-                image.Created = DateTime.Now;
-                image.Updated = DateTime.Now;
-                image.ImageFile = fileName;
+                imageToSave.Id = Guid.NewGuid().ToString();
+                imageToSave.UserID = TokenDecoder.DecodeUid(Authorization);
+                imageToSave.Created = DateTime.Now;
+                imageToSave.Updated = DateTime.Now;
+                imageToSave.ImageFile = fileName;
+                imageToSave.ImageTitle = image.ImageTitle;
+                imageToSave.IsPublic = image.IsPublic;
 
                 // Uploading an Image to the MinIO bucket
                 // Saving image data to the database
                 try
                 {
                     await _minio.PutObjectAsync("images", fileName, stream, stream.Length);
-                    _context.Images.Add(image);
+                    _context.Images.Add(imageToSave);
                     _context.SaveChanges();
                 }
                 catch (Exception ex)
@@ -199,10 +203,11 @@ namespace SOAImageGalleryAPI.Controllers
                     });
                 }
 
-                return CreatedAtAction(nameof(AddImage), new Response<Image>(image)
+                return CreatedAtAction(nameof(AddImage), new Response<Image>(imageToSave)
                 {
                     Message = "Image has been added succesfully",
-                    Succeeded = true
+                    Succeeded = true,
+                    Data = imageToSave
                 });
             }
             return BadRequest();
@@ -586,15 +591,6 @@ namespace SOAImageGalleryAPI.Controllers
                 });
                 throw;
             }
-        }
-
-        // Test API
-        [HttpGet("/test")]
-        public async Task<IActionResult> TestToken([FromHeader] string authorization, string file_name)
-        {
-            string userId = TokenDecoder.DecodeUid(authorization);
-            Console.WriteLine("ID: " + userId);
-            return Ok();
         }
     }
 }

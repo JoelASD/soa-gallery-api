@@ -123,7 +123,6 @@ http://localhost:5000/image/all/
 {
   "imageFile": "{file_extension},{base64string}",
   "imageTitle": "Iron Man",
-  "userID": "548406ef-48c8-4c76-8fee-55b52d7b1e1a",
   "isPublic": true
 }
 ```
@@ -136,17 +135,17 @@ http://localhost:5000/image/
 ```json
 {
     "data": {
-        "id": "084f31d0-4e39-48f2-9234-fdc5537702bb",
-        "imageFile": "b4bc12a1-6607-422e-a272-aa0837e95cf0.jpg",
+        "id": "d66a6754-ff49-46bc-825e-e8a38627f81a",
+        "imageFile": "4b4afa8d-5464-407f-b051-ddf40bc024e0.jpg",
         "imageTitle": "Iron Man",
         "userID": "548406ef-48c8-4c76-8fee-55b52d7b1e1a",
-        "isPublic": false,
+        "isPublic": true,
         "user": null,
         "votes": null,
         "favourites": null,
         "comments": null,
-        "created": "2021-04-24T12:53:12.745088+00:00",
-        "updated": "2021-04-24T12:53:12.7450939+00:00"
+        "created": "2021-04-24T20:46:08.3118564+03:00",
+        "updated": "2021-04-24T20:46:08.3118623+03:00"
     },
     "succeeded": true,
     "errors": null,
