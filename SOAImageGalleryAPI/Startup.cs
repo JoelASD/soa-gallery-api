@@ -41,15 +41,16 @@ namespace SOAImageGalleryAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
 
+            
             Console.WriteLine(CurrentEnvironment.EnvironmentName);
             Console.WriteLine(CurrentEnvironment.IsDevelopment());
             Console.WriteLine(CurrentEnvironment.IsProduction());
-            Console.WriteLine(Environment.GetEnvironmentVariable("IMAGE_GALLERY_POSTGRESQL_CONNECTION_STRING"));
             if (CurrentEnvironment.IsDevelopment())
             {
                 services.AddDbContext<DataContext>(p => p.UseNpgsql(Configuration["PostgreSqlConnectionString"]));
+                services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
+
             } else if (CurrentEnvironment.IsProduction())
             {
                 services.AddDbContext<DataContext>(p => p.UseNpgsql($"Server={Environment.GetEnvironmentVariable("PG_SERVER")}; port={Environment.GetEnvironmentVariable("PG_PORT")}; user id={Environment.GetEnvironmentVariable("PG_USER")}; password={Environment.GetEnvironmentVariable("PG_PASSWORD")}; database={Environment.GetEnvironmentVariable("PG_DB")};"));

@@ -1,8 +1,10 @@
 ﻿using ConsoleApp.PostgreSQL;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SOAImageGalleryAPI.Configuration;
@@ -30,12 +32,28 @@ namespace SOAImageGalleryAPI.Controllers
         private readonly UserManager<User> _userManager;
         private readonly JwtConfig _jwtConfig;
         private readonly DataContext _context;
+        private readonly IConfiguration _config;
+        private readonly IWebHostEnvironment _env;
 
-        public UserAuthController(UserManager<User> userManager, IOptionsMonitor<JwtConfig> optionsMonitor, DataContext context)
+        //public ImageController(DataContext context, IUriService uriService, IConfiguration config, IWebHostEnvironment env)
+        //{
+        //    _context = context;
+        //    _uriService = uriService;
+        //    _config = config;
+        //    _env = env;
+        //    _minio = new MinioClient(
+        //        EnvVars.GetEnvVar(_env.EnvironmentName, _config)[0],
+        //        EnvVars.GetEnvVar(_env.EnvironmentName, _config)[1],
+        //        EnvVars.GetEnvVar(_env.EnvironmentName, _config)[2]
+        //        );
+        //}
+
+        public UserAuthController(UserManager<User> userManager, IOptionsMonitor<JwtConfig> optionsMonitor, DataContext context, IWebHostEnvironment env)
         {
             _userManager = userManager;
-            _jwtConfig = optionsMonitor.CurrentValue;
             _context = context;
+            _env = env;
+            _jwtConfig = optionsMonitor.CurrentValue;
         }
 
         // Register user
@@ -264,8 +282,21 @@ namespace SOAImageGalleryAPI.Controllers
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
-            var key = Encoding.ASCII.GetBytes(_jwtConfig.Secret);
+            var key = Encoding.ASCII.GetBytes("");
 
+            if (_env.EnvironmentName == "Development")
+            {
+                key = Encoding.ASCII.GetBytes(_jwtConfig.Secret);
+            }
+            else if (_env.EnvironmentName == "Production")
+            {
+                key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET"));
+            }
+            else
+            {
+                key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET"));
+            }
+            
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
