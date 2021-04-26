@@ -10,6 +10,7 @@ namespace SOAImageGalleryAPI.Helpers
 {
     public static class TokenDecoder
     {
+        // Returns userId from token
         public static string DecodeUid(string authorization)
         {
             try
@@ -39,14 +40,13 @@ namespace SOAImageGalleryAPI.Helpers
             }
         }
 
+        // Checks is token blacklisted
         public static bool Validate(string authorization, DataContext _context)
         {
             try
             {
                 if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
                 {
-                    // we have a valid AuthenticationHeaderValue that has the following details:
-
                     var scheme = headerValue.Scheme;
                     var parameter = headerValue.Parameter;
 
@@ -60,10 +60,6 @@ namespace SOAImageGalleryAPI.Helpers
                     {
                         return false;
                     }
-
-
-                    // scheme will be "Bearer"
-                    // parmameter will be the token itself.
                 }
                 else
                 {
@@ -77,15 +73,13 @@ namespace SOAImageGalleryAPI.Helpers
             }
         }
 
+        // Returns expiration datetime from token
         public static DateTime? DecodeExpTime(string authorization)
         {
             try
             {
                 if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
                 {
-                    // we have a valid AuthenticationHeaderValue that has the following details:
-
-                    //var scheme = headerValue.Scheme;
                     var parameter = headerValue.Parameter;
 
                     var token = new JwtSecurityToken(parameter);
@@ -97,9 +91,6 @@ namespace SOAImageGalleryAPI.Helpers
                     }
 
                     return null;
-
-                    // scheme will be "Bearer"
-                    // parmameter will be the token itself.
                 }
                 else
                 {

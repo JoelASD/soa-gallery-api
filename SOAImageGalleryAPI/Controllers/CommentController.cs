@@ -41,7 +41,7 @@ namespace SOAImageGalleryAPI.Controllers
                 });
             }
 
-            // check make sure users cant comment others private images
+            // Make sure users don't comment on others private images
             var img = _context.Images.FirstOrDefault(i => i.Id == id);
             if (img.UserID != TokenDecoder.DecodeUid(Authorization) && img.IsPublic == false)
             {
@@ -56,6 +56,7 @@ namespace SOAImageGalleryAPI.Controllers
                 
                 try
                 {
+                    // Create comment
                     var newComment = new Comment
                     {
                         CommentId = Guid.NewGuid().ToString(),
@@ -130,6 +131,7 @@ namespace SOAImageGalleryAPI.Controllers
                 });
             }
 
+            
             var existingComment = _context.Comments.FirstOrDefault(i => i.CommentId == id);
 
             if (existingComment == null)
@@ -144,7 +146,7 @@ namespace SOAImageGalleryAPI.Controllers
 
             if (existingComment.UserID != TokenDecoder.DecodeUid(Authorization))
             {
-                return BadRequest(new Response<CommentDto>()
+                return Unauthorized(new Response<CommentDto>()
                 {
                     Succeeded = false,
                     Message = "User can only edit their own comments",
@@ -154,6 +156,7 @@ namespace SOAImageGalleryAPI.Controllers
 
             try
             {
+                // Edit and save
                 existingComment.CommentText = comment.CommentText;
                 existingComment.Updated = DateTime.Now;
                 _context.Comments.Update(existingComment);
