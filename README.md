@@ -12,6 +12,8 @@ Image Gallery API for the Service Oriented Applications Course in JAMK
 Swagger Docs: http://galleryapi.codesamson.com/swagger/index.html
 
 # Table of Contents
+- [SOA Gallery API](#soa-gallery-api)
+- [Table of Contents](#table-of-contents)
 - [API Endpoint Docs](#api-endpoint-docs)
   - [Images](#images)
     - [List images with pagination ordered by descending datetime](#list-images-with-pagination-ordered-by-descending-datetime)
@@ -20,7 +22,7 @@ Swagger Docs: http://galleryapi.codesamson.com/swagger/index.html
     - [Edit image](#edit-image)
     - [Get one image](#get-one-image)
     - [Delete image](#delete-image)
-    - [Edit top 5 upvoted images from last 24h (trending)](#edit-top-5-upvoted-images-from-last-24h-trending)
+    - [Get top 5 upvoted images from last 24h (trending)](#get-top-5-upvoted-images-from-last-24h-trending)
     - [List all images of the specific user](#list-all-images-of-the-specific-user)
     - [Add image to favorites or remove image from favorites](#add-image-to-favorites-or-remove-image-from-favorites)
   - [Authentication](#authentication)
@@ -28,10 +30,25 @@ Swagger Docs: http://galleryapi.codesamson.com/swagger/index.html
     - [Register user](#register-user)
     - [Login](#login)
     - [Logout](#logout)
+  - [Comments](#comments)
+    - [Comment an image](#comment-an-image)
+    - [Edit comment](#edit-comment)
+    - [Delete comment](#delete-comment)
+  - [Vote](#vote)
+    - [Vote image or remove already given vote](#vote-image-or-remove-already-given-vote)
+  - [Me](#me)
+    - [List all comments user has made](#list-all-comments-user-has-made)
+    - [List all images user has favorited](#list-all-images-user-has-favorited)
+    - [Export images user has favorited](#export-images-user-has-favorited)
 - [Features to do in the future](#features-to-do-in-the-future)
   - [Database Model](#database-model)
     - [Version 1](#version-1)
+    - [Version 2](#version-2)
   - [Dotnet commands](#dotnet-commands)
+- [Summary](#summary)
+  - [Raw time estimation](#raw-time-estimation)
+  - [Difficulty assessment](#difficulty-assessment)
+  - [Best parts](#best-parts)
 
 # API Endpoint Docs
 
@@ -42,6 +59,8 @@ Swagger Docs: http://galleryapi.codesamson.com/swagger/index.html
 **Method:** GET
 
 **Route:** /image
+
+**Response Code:** 200
 
 **Parameters:** PageNumber, PageSize
 
@@ -67,7 +86,8 @@ http://galleryapi.codesamson.com/image?PageNumber=1&PageSize=2
       "user": null,
       "imageFile": "10f82e64-95c7-453a-b64e-5075c8ab58d3.png",
       "imageTitle": "jokukuva",
-      "isPublic": false,
+      "isPublic": true,
+      "created": "2021-04-24T19:11:33.691868",
       "voteSum": 0,
       "comments": null
     },
@@ -77,7 +97,8 @@ http://galleryapi.codesamson.com/image?PageNumber=1&PageSize=2
       "user": null,
       "imageFile": "a0bbd69f-ea5b-4b09-bf1a-1ce70db2dc6d.png",
       "imageTitle": "Rave",
-      "isPublic": false,
+      "isPublic": true,
+      "created": "2021-04-24T19:11:33.691868",
       "voteSum": 1,
       "comments": null
     }
@@ -93,6 +114,8 @@ http://galleryapi.codesamson.com/image?PageNumber=1&PageSize=2
 **Method:** GET
 
 **Route:** /image/all
+
+**Response Code:** 200
 
 **Headers:** Authorization: "Bearer {Token}"
 
@@ -147,6 +170,8 @@ http://galleryapi.codesamson.com/image/all
 
 **Route:** /image
 
+**Response Code:** 201
+
 **Headers:** Authorization: "Bearer {Token}"
 
 **Body:**
@@ -190,6 +215,8 @@ http://galleryapi.codesamson.com/image
 
 **Route:** /image
 
+**Response Code:** 200
+
 **Headers:** Authorization: "Bearer {Token}"
 
 **Body:**
@@ -228,6 +255,8 @@ http://galleryapi.codesamson.com/image
 **Method:** GET
 
 **Route:** /image/{id}
+
+**Response Code:** 200
 
 **Headers:** Authorization: "Bearer {Token}"
 
@@ -306,6 +335,8 @@ http://galleryapi.codesamson.com/image/{id}/
 
 **Route:** /image/{image_id}
 
+**Response Code:** 200
+
 **Headers:** Authorization: "Bearer {Token}"
 
 **Example**
@@ -323,11 +354,13 @@ http://galleryapi.codesamson.com/image/{image_id}/
 ```
 
 
-### Edit top 5 upvoted images from last 24h (trending)
+### Get top 5 upvoted images from last 24h (trending)
 
 **Method:** GET
 
 **Route:** /image/trending
+
+**Response Code:** 200
 
 **Headers:** Authorization: "Bearer {Token}"
 
@@ -345,7 +378,8 @@ http://galleryapi.codesamson.com/image/trending/
             "user": null,
             "imageFile": "28b6174f-c91c-4400-8f26-6f0a4a3d64b8.png",
             "imageTitle": "tester image",
-            "isPublic": false,
+            "isPublic": true,
+            "created": "2021-04-24T19:11:33.691868",
             "voteSum": 1,
             "comments": null
         },
@@ -355,7 +389,8 @@ http://galleryapi.codesamson.com/image/trending/
             "user": null,
             "imageFile": "10f82e64-95c7-453a-b64e-5075c8ab58d3.png",
             "imageTitle": "jokukuva",
-            "isPublic": false,
+            "isPublic": true,
+            "created": "2021-04-24T19:11:33.691868",
             "voteSum": -1,
             "comments": null
         }
@@ -371,6 +406,8 @@ http://galleryapi.codesamson.com/image/trending/
 **Method:** GET
 
 **Route:** /user/{user_id}/images
+
+**Response Code:** 200
 
 **Headers:** Authorization: "Bearer {Token}"
 
@@ -388,7 +425,8 @@ http://galleryapi.codesamson.com/user/{user_id}/images/
             "user": null,
             "imageFile": "1cf1331d-88ce-441b-8dfc-e136b4541834.jpg",
             "imageTitle": "iron man 2",
-            "isPublic": false,
+            "isPublic": true,
+            "created": "2021-04-24T19:11:33.691868",
             "voteSum": 0,
             "comments": null
         },
@@ -398,7 +436,8 @@ http://galleryapi.codesamson.com/user/{user_id}/images/
             "user": null,
             "imageFile": "9895891a-2b36-49d9-91c3-646009c42928.jpg",
             "imageTitle": "Iron Man",
-            "isPublic": false,
+            "isPublic": true,
+            "created": "2021-04-24T19:11:33.691868",
             "voteSum": 0,
             "comments": null
         },
@@ -408,7 +447,8 @@ http://galleryapi.codesamson.com/user/{user_id}/images/
             "user": null,
             "imageFile": "0a12aeb1-6e5f-4670-8ac0-8fdf7c24c143.jpg",
             "imageTitle": "Iron Man",
-            "isPublic": false,
+            "isPublic": true,
+            "created": "2021-04-24T19:11:33.691868",
             "voteSum": 0,
             "comments": null
         },
@@ -418,7 +458,8 @@ http://galleryapi.codesamson.com/user/{user_id}/images/
             "user": null,
             "imageFile": "5050f037-e35a-4e18-afcb-3aa12b6050f7.jpg",
             "imageTitle": "Iron Man",
-            "isPublic": false,
+            "isPublic": true,
+            "created": "2021-04-24T19:11:33.691868",
             "voteSum": 0,
             "comments": null
         }
@@ -434,6 +475,8 @@ http://galleryapi.codesamson.com/user/{user_id}/images/
 **Method:** PUT
 
 **Route:** /image/{image_id}/favorite
+
+**Response Code:** 200
 
 **Headers:** Authorization: "Bearer {Token}"
 
@@ -461,6 +504,8 @@ This works locally / development, but on the CSC instance it returns an error. T
 
 **Route:** /google
 
+**Response Code:** 200
+
 **Callback route:** /signin-callback
 
 **Example**
@@ -484,6 +529,8 @@ http://galleryapi.codesamson.com/google/
 **Method:** POST
 
 **Route:** /register
+
+**Response Code:** 200
 
 **Body:**
 
@@ -515,6 +562,8 @@ http://galleryapi.codesamson.com/register/
 
 **Route:** /login
 
+**Response Code:** 200
+
 **Body:**
 
 ```json
@@ -544,6 +593,8 @@ http://galleryapi.codesamson.com/login/
 
 **Route:** /logout
 
+**Response Code:** 200
+
 **Headers:** Authorization: "Bearer {Token}"
 
 **Example**
@@ -572,6 +623,8 @@ http://galleryapi.codesamson.com/logout/
 **Method:** POST
 
 **Route:** /image/{image-id}/comment
+
+**Response Code:** 200
 
 **Headers:** Authorization: "Bearer {Token}"
 
@@ -612,6 +665,8 @@ http://galleryapi.codesamson.com/image/{image-id}/comment
 
 **Route:** /comment/{comment-id}
 
+**Response Code:** 200
+
 **Headers:** Authorization: "Bearer {Token}"
 
 **Body:**
@@ -651,6 +706,8 @@ http://galleryapi.codesamson.com/comment/{comment-id}
 
 **Route:** /comment/{comment-id}
 
+**Response Code:** 200
+
 **Headers:** Authorization: "Bearer {Token}"
 
 **Example**
@@ -675,6 +732,8 @@ http://galleryapi.codesamson.com/comment/{comment-id}
 **Method:** Put
 
 **Route:** /image/{image-id}/vote
+
+**Response Code:** 200
 
 **Headers:** Authorization: "Bearer {Token}"
 
@@ -736,6 +795,8 @@ http://galleryapi.codesamson.com/image/{image-id}/vote
 
 **Route:** /me/comments
 
+**Response Code:** 200
+
 **Headers:** Authorization: "Bearer {Token}"
 
 **Example**
@@ -755,6 +816,8 @@ http://galleryapi.codesamson.com/me/comments
 **Method:** GET
 
 **Route:** /me/favorites
+
+**Response Code:** 200
 
 **Headers:** Authorization: "Bearer {Token}"
 
@@ -776,6 +839,8 @@ http://galleryapi.codesamson.com/me/favorites
 
 **Route:** /me/favorites/export
 
+**Response Code:** 200
+
 **Headers:** Authorization: "Bearer {Token}"
 
 **Example**
@@ -784,7 +849,7 @@ http://galleryapi.codesamson.com/me/favorites/export
 
 **Response**
 
-favorites.zip
+Downloads favorites.zip automatically
 
 
 <br/>
@@ -814,3 +879,47 @@ favorites.zip
 * Updating Database: ```dotnet-ef database update```
 * Starting the server: ```dotnet run``` runs on http://localhost:5001
 * Watching the server: ```dotnet run watch``` runs on http://localhost:5001
+
+
+# Summary
+
+Here is the summary or small report for the project.
+
+## Raw time estimation
+
+| Feature                                                                                          | Time (h)  |
+| ------------------------------------------------------------------------------------------------ | :-------: |
+| Ability to upload a new image                                                                    |     4     |
+| Ability to list uploaded images paginated                                                        |    3.5    |
+| List uploads per user                                                                            |     2     |
+| Ability to remove an uploaded image                                                              |    2.5    |
+| Ability to vote (upvote, downvote) an image                                                      |     3     |
+| Ability to mark image as a favorite or remove it                                                 |     3     |
+| Ability to comment on a image                                                                    |    3.5    |
+| Ability to edit or remove comments                                                               |     3     |
+| Ability to create a user / register                                                              |     5     |
+| Ability to login and logout                                                                      |     4     |
+| Able to list most "trending" images                                                              |     4     |
+| Ability to download favorites as a zip / export                                                  |     4     |
+| Login using a Google / Facebook / etc. account                                                   |     6     |
+| Public / private images                                                                          |     3     |
+| Usage of Gitlab CI to build a docker image of the API and upload it to Gitlab container registry |     3     |
+| Creating a docker-compose.yaml file with the appropriate environment variables defined           |     5     |
+| Testing                                                                                          |     8     |
+| Bug fixes                                                                                        |    20     |
+| Server / CSC configurations                                                                      |    10     |
+| Documentation                                                                                    |     5     |
+| **Total**                                                                                        | **101.5** |
+
+## Difficulty assessment
+
+We did not find anything very hard, some features were more time consuming to develop that others. The assignment was very enjoyable to do, so nothing seemed too hard.
+
+## Best parts
+
+The greatest learning experience was combined from three parts:
+* Learning a new backend development framework: ASP.NET Core
+* Learning Docker and Docker Compose
+* Learning Gitlab's CD/CI pipelines
+
+Also teamwork deserves an honourable mention.
