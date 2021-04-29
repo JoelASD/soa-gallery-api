@@ -83,6 +83,7 @@ namespace SOAImageGalleryAPI.Controllers
                         },
                         ImageFile = image.ImageFile,
                         ImageTitle = image.ImageTitle,
+                        IsPublic = image.IsPublic,
                         Created = image.Created,
                         VoteSum = image.Votes.Sum(v => v.Voted)
                     };
@@ -391,17 +392,9 @@ namespace SOAImageGalleryAPI.Controllers
                 _context.Entry(img).Collection(i => i.Votes).Load();
                 _context.Entry(img).Collection(i => i.Favourites).Load();
 
-
-
-                //var commentsToDelete = _context.Comments.Where(c => c.ImageID == id);
-                //var favoritesToDelete = _context.Favorites.Where(f => f.ImageID == id);
-                //var votesToDelete = _context.Votes.Where(v => v.ImageID == id);
-
                 imageFile = img.ImageFile;
                 await _minio.RemoveObjectAsync("images", imageFile);
-                //_context.Comments.RemoveRange(commentsToDelete);
-                //_context.Favorites.RemoveRange(favoritesToDelete);
-                //_context.Votes.RemoveRange(votesToDelete);
+
                 _context.Images.Remove(img);
                 _context.SaveChanges();
             }
@@ -452,7 +445,9 @@ namespace SOAImageGalleryAPI.Controllers
                         ImageId = image.ImageId,
                         ImageTitle = i.ImageTitle,
                         ImageFile = i.ImageFile,
-                        VoteSum = image.VoteSum
+                        VoteSum = image.VoteSum,
+                        IsPublic = image.IsPublic,
+                        Created = image.Created
                     });
                 }
 
@@ -502,7 +497,8 @@ namespace SOAImageGalleryAPI.Controllers
                         UserId = image.UserID,
                         ImageFile = image.ImageFile,
                         ImageTitle = image.ImageTitle,
-                        IsPublic = image.IsPublic
+                        IsPublic = image.IsPublic,
+                        Created = image.Created
                     };
 
                     data.Add(i);
