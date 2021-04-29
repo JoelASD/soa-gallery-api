@@ -70,7 +70,7 @@ namespace SOAImageGalleryAPI.Controllers
                     _context.Comments.Add(newComment);
                     _context.SaveChanges();
 
-                    return Ok(new Response<CommentDto>()
+                    return CreatedAtAction(nameof(AddComment), new Response<CommentDto>()
                     {
                         Data = new CommentDto { 
                             CommentId = newComment.CommentId,
