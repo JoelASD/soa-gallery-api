@@ -807,7 +807,38 @@ http://galleryapi.codesamson.com/me/comments
 
 ```json
 {
-    "data": "fix this"
+  "data": [
+    {
+      "commentId": "271ff2e7-945b-44c5-810c-b12c35797e3d",
+      "user": {
+        "userId": "e9b27b1c-1f8d-4da9-94cf-7e6f59c71ab6",
+        "userName": "joel"
+      },
+      "commentText": "siisti kuva",
+      "imageId": "c6fd4feb-ef86-4445-8d24-c034e4f08aeb"
+    },
+    {
+      "commentId": "a5a2bdf4-ead4-4129-be45-64e8f8ef23a9",
+      "user": {
+        "userId": "e9b27b1c-1f8d-4da9-94cf-7e6f59c71ab6",
+        "userName": "joel"
+      },
+      "commentText": "siisti!",
+      "imageId": "c6fd4feb-ef86-4445-8d24-c034e4f08aeb"
+    },
+    {
+      "commentId": "5748d6e7-7b6b-41da-a850-b5913d48c42d",
+      "user": {
+        "userId": "e9b27b1c-1f8d-4da9-94cf-7e6f59c71ab6",
+        "userName": "joel"
+      },
+      "commentText": "first!",
+      "imageId": "c6fd4feb-ef86-4445-8d24-c034e4f08aeb"
+    }
+  ],
+  "succeeded": true,
+  "errors": null,
+  "message": null
 }
 ```
 
@@ -829,7 +860,25 @@ http://galleryapi.codesamson.com/me/favorites
 
 ```json
 {
-    "data": "fix this"
+  "data": [
+    {
+      "imageId": "d16253d3-c000-457b-815b-91b960287763",
+      "userId": null,
+      "user": {
+          "userId": "0983e612-a6e5-45bb-ae76-1e7c9d87dcc3",
+          "userName": "jouni"
+      },
+      "imageFile": "3a234904-499d-4777-9c88-288856fadabf.png",
+      "imageTitle": "testminio",
+      "isPublic": true,
+      "created": "0001-01-01T00:00:00",
+      "voteSum": 0,
+      "comments": null
+    }
+  ],
+  "succeeded": true,
+  "errors": null,
+  "message": null
 }
 ```
 
