@@ -12,8 +12,6 @@ Image Gallery API for the Service Oriented Applications Course in JAMK
 Swagger Docs: http://galleryapi.codesamson.com/swagger/index.html
 
 # Table of Contents
-- [SOA Gallery API](#soa-gallery-api)
-- [Table of Contents](#table-of-contents)
 - [API Endpoint Docs](#api-endpoint-docs)
   - [Images](#images)
     - [List images with pagination ordered by descending datetime](#list-images-with-pagination-ordered-by-descending-datetime)
