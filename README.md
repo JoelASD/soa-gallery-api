@@ -12,6 +12,8 @@ Image Gallery API for the Service Oriented Applications Course in JAMK
 Swagger Docs: http://galleryapi.codesamson.com/swagger/index.html
 
 # Table of Contents
+- [SOA Gallery API](#soa-gallery-api)
+- [Table of Contents](#table-of-contents)
 - [API Endpoint Docs](#api-endpoint-docs)
   - [Images](#images)
     - [List images with pagination ordered by descending datetime](#list-images-with-pagination-ordered-by-descending-datetime)
@@ -38,11 +40,11 @@ Swagger Docs: http://galleryapi.codesamson.com/swagger/index.html
     - [List all comments user has made](#list-all-comments-user-has-made)
     - [List all images user has favorited](#list-all-images-user-has-favorited)
     - [Export images user has favorited](#export-images-user-has-favorited)
-- [Features to do in the future](#features-to-do-in-the-future)
   - [Database Model](#database-model)
     - [Version 1](#version-1)
     - [Version 2](#version-2)
   - [Dotnet commands](#dotnet-commands)
+- [Features not implemented](#features-not-implemented)
 - [Summary](#summary)
   - [Raw time estimation](#raw-time-estimation)
   - [Difficulty assessment](#difficulty-assessment)
@@ -904,12 +906,6 @@ Downloads favorites.zip automatically
 <br/>
 <br/>
 
-# Features to do in the future
-
-* Logging to external server
-* Tests
-* Admin / normal user / anonymous
-* Report this image feature
 
 ## Database Model
 
@@ -926,6 +922,13 @@ Downloads favorites.zip automatically
 * Updating Database: ```dotnet-ef database update```
 * Starting the server: ```dotnet run``` runs on http://localhost:5001
 * Watching the server: ```dotnet run watch``` runs on http://localhost:5001
+
+# Features not implemented
+
+* Logging to external server
+* Tests
+* Admin / normal user / anonymous
+* Report this image feature
 
 
 # Summary
