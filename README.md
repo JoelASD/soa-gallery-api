@@ -12,8 +12,6 @@ Image Gallery API for the Service Oriented Applications Course in JAMK
 Swagger Docs: http://galleryapi.codesamson.com/swagger/index.html
 
 # Table of Contents
-- [SOA Gallery API](#soa-gallery-api)
-- [Table of Contents](#table-of-contents)
 - [API Endpoint Docs](#api-endpoint-docs)
   - [Images](#images)
     - [List images with pagination ordered by descending datetime](#list-images-with-pagination-ordered-by-descending-datetime)
@@ -871,7 +869,7 @@ http://galleryapi.codesamson.com/me/favorites
       "imageFile": "3a234904-499d-4777-9c88-288856fadabf.png",
       "imageTitle": "testminio",
       "isPublic": true,
-      "created": "0001-01-01T00:00:00",
+      "created": "2021-04-24T19:11:33.691868",
       "voteSum": 0,
       "comments": null
     }
