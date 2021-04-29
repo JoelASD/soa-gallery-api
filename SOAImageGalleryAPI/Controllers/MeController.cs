@@ -139,6 +139,7 @@ namespace SOAImageGalleryAPI.Controllers
                         ImageTitle = i.ImageTitle,
                         ImageFile = i.ImageFile,
                         IsPublic = i.IsPublic,
+                        Created = i.Created,
                         User = new UserDto
                         {
                             UserId = u.Id,
