@@ -83,7 +83,7 @@ namespace SOAImageGalleryAPI.Controllers
                         },
                         ImageFile = image.ImageFile,
                         ImageTitle = image.ImageTitle,
-                        Craeted = image.Created,
+                        Created = image.Created,
                         VoteSum = image.Votes.Sum(v => v.Voted)
                     };
 
@@ -147,7 +147,7 @@ namespace SOAImageGalleryAPI.Controllers
             }
         }
 
-        // Adding an image // USER CAN POST PICTURES FOR OTHER USERS -- FIX
+        // Post an image
         [HttpPost]
         public async Task<ActionResult> AddImage([FromHeader] string Authorization, [FromBody] ImageDto image)
         {

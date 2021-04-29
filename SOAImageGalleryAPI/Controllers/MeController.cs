@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Minio;
-using Minio.DataModel;
 using SOAImageGalleryAPI.Helpers;
 using SOAImageGalleryAPI.Models;
 using SOAImageGalleryAPI.Models.Dto;
@@ -15,9 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+
 
 namespace SOAImageGalleryAPI.Controllers
 {
@@ -61,9 +59,11 @@ namespace SOAImageGalleryAPI.Controllers
             {
                 string uid = TokenDecoder.DecodeUid(Authorization);
 
+                // Load comments and user data
                 var myComments = _context.Comments.Where(c => c.UserID == uid).ToList();
                 var myUser = _context.Users.FirstOrDefault(u => u.Id == uid);
 
+                // Create DTOs to response
                 var user = new UserDto
                 {
                     UserId = uid,
@@ -118,12 +118,14 @@ namespace SOAImageGalleryAPI.Controllers
             {
                 string uid = TokenDecoder.DecodeUid(Authorization);
 
+                // Load users favorites
                 var favoriteImages = _context.Favorites
                     .Where(f => f.UserID == uid)
                     .ToList();
 
                 List<ImageDto> data = new List<ImageDto>();
 
+                // Load actual images and make DTOs
                 foreach (var favorite in favoriteImages)
                 {
                     Image i = _context.Images.FirstOrDefault(i => i.Id == favorite.ImageID);
@@ -181,10 +183,12 @@ namespace SOAImageGalleryAPI.Controllers
             {
                 string uid = TokenDecoder.DecodeUid(Authorization);
 
+                // Load users favorites
                 var favorites = _context.Favorites.Where(f => f.UserID == uid).ToList();
 
                 List<ZipItem> imgList = new List<ZipItem>();
 
+                // Get images from minio
                 foreach (var image in favorites)
                 {
                     Image img = _context.Images.FirstOrDefault(i => i.Id == image.ImageID);

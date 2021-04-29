@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace SOAImageGalleryAPI.Configuration
 {
+    // Used for register / login responses
     public class AuthResult
     {
         public string Token { get; set; }

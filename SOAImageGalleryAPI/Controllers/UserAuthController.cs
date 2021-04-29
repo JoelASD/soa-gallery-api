@@ -114,7 +114,7 @@ namespace SOAImageGalleryAPI.Controllers
                 var existingUser = await _userManager.FindByEmailAsync(user.Email);
                 if (existingUser == null)
                 {
-                    return BadRequest(new RegistrationResponse() // create own response, loginResponse?
+                    return BadRequest(new RegistrationResponse()
                     {
                         Errors = new List<string>()
                         {
@@ -128,7 +128,7 @@ namespace SOAImageGalleryAPI.Controllers
 
                 if (!isCorrect)
                 {
-                    return BadRequest(new RegistrationResponse() // create own response, loginResponse?
+                    return BadRequest(new RegistrationResponse()
                     {
                         Errors = new List<string>()
                         {
@@ -147,7 +147,7 @@ namespace SOAImageGalleryAPI.Controllers
                 });
             }
 
-            return BadRequest(new RegistrationResponse() // create own response, loginResponse?
+            return BadRequest(new RegistrationResponse()
             {
                 Errors = new List<string>()
                         {
@@ -157,7 +157,7 @@ namespace SOAImageGalleryAPI.Controllers
             });
         }
 
-        [HttpPost("/logout")] // korjaa paremmaksi
+        [HttpPost("/logout")]
         public IActionResult Logout([FromHeader] string Authorization)
         {
             if (TokenDecoder.Validate(Authorization, _context))
@@ -278,6 +278,7 @@ namespace SOAImageGalleryAPI.Controllers
             }
         }
 
+        // Returns newly created token
         private string GenerateJwt(IdentityUser user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();

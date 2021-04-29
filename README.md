@@ -47,7 +47,7 @@ Swagger Docs: http://galleryapi.codesamson.com/swagger/index.html
 
 **Example**
 
-http://localhost:5000/image?PageNumber=1&PageSize=2
+http://galleryapi.codesamson.com/image?PageNumber=1&PageSize=2
 
 **Response**
 ```json
@@ -98,7 +98,7 @@ http://localhost:5000/image?PageNumber=1&PageSize=2
 
 **Example**
 
-http://localhost:5000/image/all/
+http://galleryapi.codesamson.com/image/all
 
 **Response**
 ```json
@@ -160,7 +160,7 @@ http://localhost:5000/image/all/
 
 **Example**
 
-http://localhost:5000/image/
+http://galleryapi.codesamson.com/image
 
 **Response**
 ```json
@@ -202,7 +202,7 @@ http://localhost:5000/image/
 
 **Example**
 
-http://localhost:5000/image/
+http://galleryapi.codesamson.com/image
 
 **Response**
 ```json
@@ -233,7 +233,7 @@ http://localhost:5000/image/
 
 **Example**
 
-http://localhost:5000/image/{id}/
+http://galleryapi.codesamson.com/image/{id}/
 
 **Response**
 ```json
@@ -310,7 +310,7 @@ http://localhost:5000/image/{id}/
 
 **Example**
 
-http://localhost:5000/image/{image_id}/
+http://galleryapi.codesamson.com/image/{image_id}/
 
 **Response**
 ```json
@@ -333,7 +333,7 @@ http://localhost:5000/image/{image_id}/
 
 **Example**
 
-http://localhost:5000/image/trending/
+http://galleryapi.codesamson.com/image/trending/
 
 **Response**
 ```json
@@ -376,7 +376,7 @@ http://localhost:5000/image/trending/
 
 **Example**
 
-http://localhost:5000/user/{user_id}/images/
+http://galleryapi.codesamson.com/user/{user_id}/images/
 
 **Response**
 ```json
@@ -439,7 +439,7 @@ http://localhost:5000/user/{user_id}/images/
 
 **Example**
 
-http://localhost:5000/image/{image_id}/favorite/
+http://galleryapi.codesamson.com/image/{image_id}/favorite/
 
 **Response**
 ```json
@@ -465,7 +465,7 @@ This works locally / development, but on the CSC instance it returns an error. T
 
 **Example**
 
-http://localhost:5000/google/
+http://galleryapi.codesamson.com/google/
 
 **Response**
 ```json
@@ -497,7 +497,7 @@ http://localhost:5000/google/
 
 **Example**
 
-http://localhost:5000/register/
+http://galleryapi.codesamson.com/register/
 
 **Response**
 ```json
@@ -526,7 +526,7 @@ http://localhost:5000/register/
 
 **Example**
 
-http://localhost:5000/login/
+http://galleryapi.codesamson.com/login/
 
 **Response**
 ```json
@@ -548,7 +548,7 @@ http://localhost:5000/login/
 
 **Example**
 
-http://localhost:5000/logout/
+http://galleryapi.codesamson.com/logout/
 
 **Response**
 
@@ -564,6 +564,228 @@ http://localhost:5000/logout/
     "message": null
 }
 ```
+
+## Comments
+
+### Comment an image
+
+**Method:** POST
+
+**Route:** /image/{image-id}/comment
+
+**Headers:** Authorization: "Bearer {Token}"
+
+**Body:**
+
+```json
+{
+    "commentText": "string"
+}
+```
+
+**Example**
+
+http://galleryapi.codesamson.com/image/{image-id}/comment
+
+**Response**
+
+```json
+{
+    "data": {
+        "commentId": "{new comment id}",
+        "user": {
+            "userId": "{poster id}",
+            "userName": null
+        },
+        "commentText": "string",
+        "imageId": "{image id}"
+    },
+    "succeeded": true,
+    "errors": null,
+    "message": "Comment added"
+}
+```
+
+### Edit comment
+
+**Method:** PUT
+
+**Route:** /comment/{comment-id}
+
+**Headers:** Authorization: "Bearer {Token}"
+
+**Body:**
+
+```json
+{
+    "commentText": "string"
+}
+```
+
+**Example**
+
+http://galleryapi.codesamson.com/comment/{comment-id}
+
+**Response**
+
+```json
+{
+    "data": {
+        "commentId": "{new comment id}",
+        "user": {
+            "userId": "{poster id}",
+            "userName": null
+        },
+        "commentText": "string",
+        "imageId": "{image id}"
+    },
+    "succeeded": true,
+    "errors": null,
+    "message": "Comment edited!"
+}
+```
+
+### Delete comment
+
+**Method:** Delete
+
+**Route:** /comment/{comment-id}
+
+**Headers:** Authorization: "Bearer {Token}"
+
+**Example**
+
+http://galleryapi.codesamson.com/comment/{comment-id}
+
+**Response**
+
+```json
+{
+    "data": null,
+    "succeeded": true,
+    "errors": null,
+    "message": "Comment deleted!"
+}
+```
+
+## Vote
+
+### Vote image or remove already given vote
+
+**Method:** Put
+
+**Route:** /image/{image-id}/vote
+
+**Headers:** Authorization: "Bearer {Token}"
+
+**Body:**
+Voted only accepts -1 and 1
+
+```json
+{
+    "Voted": 1
+}
+```
+
+**Example**
+
+http://galleryapi.codesamson.com/image/{image-id}/vote
+
+**Response**
+
+```json
+{
+    "data": {
+        "voteId": "{id}",
+        "voted": -1,
+        "userId": "{id}",
+        "imageId": "{id}"
+    },
+    "succeeded": true,
+    "errors": null,
+    "message": "Vote added!"
+}
+```
+```json
+{
+    "data": {
+        "voteId": "{id}",
+        "voted": 1,
+        "userId": "{id}",
+        "imageId": "{id}"
+    },
+    "succeeded": true,
+    "errors": null,
+    "message": "Vote changed"
+}
+```
+```json
+{
+    "data": null,
+    "succeeded": true,
+    "errors": null,
+    "message": "Vote deleted"
+}
+```
+
+## Me
+
+### List all comments user has made
+
+**Method:** GET
+
+**Route:** /me/comments
+
+**Headers:** Authorization: "Bearer {Token}"
+
+**Example**
+
+http://galleryapi.codesamson.com/me/comments
+
+**Response**
+
+```json
+{
+    "data": "fix this"
+}
+```
+
+### List all images user has favorited
+
+**Method:** GET
+
+**Route:** /me/favorites
+
+**Headers:** Authorization: "Bearer {Token}"
+
+**Example**
+
+http://galleryapi.codesamson.com/me/favorites
+
+**Response**
+
+```json
+{
+    "data": "fix this"
+}
+```
+
+### Export images user has favorited
+
+**Method:** GET
+
+**Route:** /me/favorites/export
+
+**Headers:** Authorization: "Bearer {Token}"
+
+**Example**
+
+http://galleryapi.codesamson.com/me/favorites/export
+
+**Response**
+
+favorites.zip
+
 
 <br/>
 <br/>
@@ -581,6 +803,9 @@ http://localhost:5000/logout/
 
 ### Version 1
 ![Database](images/LogicalDbModel.png)
+
+### Version 2
+![Database](images/logical-model-v2.JPG)
 
 ## Dotnet commands
 

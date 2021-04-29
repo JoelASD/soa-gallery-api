@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace SOAImageGalleryAPI.Helpers
 {
+    // Returns stream of the zipped images
     public static class Zipper
     {
         public static Stream Zip(List<ZipItem> zipItems)
